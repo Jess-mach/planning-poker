@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import { useSession } from '../../contexts/SessionContext';
 import { Container } from '../Container/Container';
 import { Button } from '../Button/Button';
@@ -6,6 +7,7 @@ import { ParticipantsList } from '../ParticipantsList/ParticipantsList';
 import './GameRoom.css';
 
 export const GameRoom = () => {
+  const navigate = useNavigate();
   const { session, currentUser, revealCards, resetRound, leaveSession, vote } = useSession();
 
   if (!session || !currentUser) {
@@ -29,7 +31,7 @@ export const GameRoom = () => {
   const handleLeave = () => {
     if (confirm('Tem certeza que deseja sair da sessão?')) {
       leaveSession();
-      window.location.href = '/';
+      navigate('/');
     }
   };
 

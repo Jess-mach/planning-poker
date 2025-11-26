@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useSession } from '../../contexts/SessionContext';
 import { Container } from '../Container/Container';
 import { Button } from '../Button/Button';
@@ -10,6 +11,7 @@ interface JoinRoomProps {
 }
 
 export const JoinRoom = ({ sessionId, onJoin }: JoinRoomProps) => {
+  const navigate = useNavigate();
   const { joinSession, createSession } = useSession();
   const [userName, setUserName] = useState('');
   const [role, setRole] = useState<'voter' | 'observer'>('voter');
@@ -23,24 +25,31 @@ export const JoinRoom = ({ sessionId, onJoin }: JoinRoomProps) => {
       return;
     }
 
+    let gameId: string;
+
     if (isCreating) {
       if (!sessionName.trim()) {
         alert('Por favor, informe o nome da sessão');
         return;
       }
       // Ao criar, o usuário será o facilitador
-      createSession(sessionName, deckType, userName);
+      const newSession = createSession(sessionName, deckType, userName);
+      gameId = newSession.id;
     } else {
       if (!sessionId) {
         alert('ID da sessão não fornecido');
         return;
       }
       joinSession(sessionId, userName, role);
+      gameId = sessionId;
     }
 
     if (onJoin) {
       onJoin();
     }
+
+    // Redirecionar para a página do jogo
+    navigate(`/game/${gameId}`);
   };
 
   return (

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './Header.css';
 import { Container } from '../Container/Container';
 import { Button } from '../Button/Button';
@@ -6,25 +7,20 @@ import { Button } from '../Button/Button';
 interface HeaderProps {
   sessionId?: string;
   onStartGame?: () => void;
-  onBackToHome?: () => void;
 }
 
-export const Header = ({ sessionId, onStartGame, onBackToHome }: HeaderProps) => {
+export const Header = ({ sessionId, onStartGame }: HeaderProps) => {
+  const navigate = useNavigate();
   const [copySuccess, setCopySuccess] = useState(false);
 
   const handleLogoClick = () => {
-    if (onBackToHome) {
-      onBackToHome();
-    } else {
-      // Recarregar a página para voltar ao estado inicial
-      window.location.href = '/';
-    }
+    navigate('/');
   };
 
   const handleShareRoom = () => {
     if (!sessionId) return;
 
-    const shareUrl = `${window.location.origin}${window.location.pathname}?sessionId=${sessionId}`;
+    const shareUrl = `${window.location.origin}/game/${sessionId}`;
     
     navigator.clipboard.writeText(shareUrl).then(() => {
       setCopySuccess(true);
