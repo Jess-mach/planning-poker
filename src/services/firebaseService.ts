@@ -3,8 +3,7 @@ import {
   set, 
   get, 
   update, 
-  onValue, 
-  off,
+  onValue,
   serverTimestamp,
   onDisconnect
 } from 'firebase/database';
@@ -215,10 +214,8 @@ export class FirebaseService {
       callback(session);
     });
 
-    // Retornar função para cancelar a inscrição
-    return () => {
-      off(sessionRef);
-    };
+    // Retornar função de unsubscribe
+    return unsubscribe;
   }
 
   /**
