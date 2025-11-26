@@ -18,38 +18,56 @@ export const JoinRoom = ({ sessionId, onJoin }: JoinRoomProps) => {
   const [sessionName, setSessionName] = useState('');
   const [deckType, setDeckType] = useState<'fibonacci' | 'powersOf2' | 'tshirt'>('fibonacci');
   const [isCreating, setIsCreating] = useState(!sessionId);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleJoin = () => {
+  const handleJoin = async () => {
     if (!userName.trim()) {
-      alert('Por favor, informe seu nome');
+      setError('Por favor, informe seu nome');
       return;
     }
 
-    let gameId: string;
+    setIsLoading(true);
+    setError(null);
 
-    if (isCreating) {
-      if (!sessionName.trim()) {
-        alert('Por favor, informe o nome da sessão');
-        return;
+    try {
+      let gameId: string;
+
+      if (isCreating) {
+        if (!sessionName.trim()) {
+          setError('Por favor, informe o nome da sessão');
+          setIsLoading(false);
+          return;
+        }
+        // Ao criar, o usuário será o facilitador
+        const newSession = await createSession(sessionName, deckType, userName);
+        gameId = newSession.id;
+      } else {
+        if (!sessionId) {
+          setError('ID da sessão não fornecido');
+          setIsLoading(false);
+          return;
+        }
+        await joinSession(sessionId, userName, role);
+        gameId = sessionId;
       }
-      // Ao criar, o usuário será o facilitador
-      const newSession = createSession(sessionName, deckType, userName);
-      gameId = newSession.id;
-    } else {
-      if (!sessionId) {
-        alert('ID da sessão não fornecido');
-        return;
+
+      if (onJoin) {
+        onJoin();
       }
-      joinSession(sessionId, userName, role);
-      gameId = sessionId;
-    }
 
-    if (onJoin) {
-      onJoin();
+      // Redirecionar para a página do jogo
+      navigate(`/game/${gameId}`);
+    } catch (err) {
+      console.error('Erro ao entrar/criar sessão:', err);
+      setError(
+        isCreating 
+          ? 'Erro ao criar sessão. Tente novamente.' 
+          : 'Sessão não encontrada. Verifique o ID e tente novamente.'
+      );
+    } finally {
+      setIsLoading(false);
     }
-
-    // Redirecionar para a página do jogo
-    navigate(`/game/${gameId}`);
   };
 
   return (
@@ -157,15 +175,31 @@ export const JoinRoom = ({ sessionId, onJoin }: JoinRoomProps) => {
             </div>
           )}
 
-          <Button variant="primary" size="large" onClick={handleJoin} className="join-room__button">
-            {isCreating ? 'Criar Sessão' : 'Entrar na Sessão'}
+          {error && (
+            <div className="join-room__error">
+              {error}
+            </div>
+          )}
+
+          <Button 
+            variant="primary" 
+            size="large" 
+            onClick={handleJoin} 
+            className="join-room__button"
+            disabled={isLoading}
+          >
+            {isLoading ? 'Conectando...' : isCreating ? 'Criar Sessão' : 'Entrar na Sessão'}
           </Button>
 
           {isCreating && (
             <button
               type="button"
               className="join-room__toggle"
-              onClick={() => setIsCreating(false)}
+              onClick={() => {
+                setIsCreating(false);
+                setError(null);
+              }}
+              disabled={isLoading}
             >
               Já tenho um ID de sessão
             </button>

@@ -1,19 +1,20 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import type { User, Session, UserRole } from '../types/session';
-
+import FirebaseService from '../services/firebaseService';
 
 export type { User, Session, UserRole };
 
 interface SessionContextType {
   session: Session | null;
   currentUser: User | null;
-  createSession: (sessionName: string, deckType: 'fibonacci' | 'powersOf2' | 'tshirt', facilitatorName?: string) => Session;
-  joinSession: (sessionId: string, userName: string, role: UserRole) => void;
-  leaveSession: () => void;
-  vote: (userId: string, value: number | string) => void;
-  revealCards: () => void;
-  resetRound: () => void;
+  createSession: (sessionName: string, deckType: 'fibonacci' | 'powersOf2' | 'tshirt', facilitatorName?: string) => Promise<Session>;
+  joinSession: (sessionId: string, userName: string, role: UserRole) => Promise<void>;
+  leaveSession: () => Promise<void>;
+  vote: (userId: string, value: number | string) => Promise<void>;
+  revealCards: () => Promise<void>;
+  resetRound: () => Promise<void>;
+  isLoading: boolean;
 }
 
 const SessionContext = createContext<SessionContextType | undefined>(undefined);
@@ -27,172 +28,241 @@ export const useSession = () => {
 };
 
 export const SessionProvider = ({ children }: { children: ReactNode }) => {
+  const [session, setSession] = useState<Session | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
   // Tentar carregar sessão do localStorage ao inicializar
-  const loadStoredSession = (): { session: Session | null; user: User | null } => {
-    try {
-      const storedSession = localStorage.getItem('currentSession');
-      const storedUser = localStorage.getItem('currentUser');
-      
-      if (storedSession && storedUser) {
-        return {
-          session: JSON.parse(storedSession),
-          user: JSON.parse(storedUser),
-        };
-      }
-    } catch (e) {
-      console.error('Error loading stored session', e);
-    }
-    return { session: null, user: null };
-  };
-
-  const { session: initialSession, user: initialUser } = loadStoredSession();
-  const [session, setSession] = useState<Session | null>(initialSession);
-  const [currentUser, setCurrentUser] = useState<User | null>(initialUser);
-
-  const generateId = () => {
-    return Math.random().toString(36).substring(2, 15);
-  };
-
-  const createSession = (
-    sessionName: string,
-    deckType: 'fibonacci' | 'powersOf2' | 'tshirt',
-    facilitatorName?: string
-  ): Session => {
-    const facilitatorId = generateId();
-    const facilitator: User = {
-      id: facilitatorId,
-      name: facilitatorName || 'Facilitator',
-      role: 'facilitator',
-      hasVoted: false,
-    };
-
-    const newSession: Session = {
-      id: generateId(),
-      name: sessionName,
-      deckType,
-      users: [facilitator],
-      isRevealed: false,
-      facilitatorId,
-    };
-
-    setSession(newSession);
-    setCurrentUser(facilitator);
-    
-    // Salvar no localStorage para persistência
-    localStorage.setItem('currentSession', JSON.stringify(newSession));
-    localStorage.setItem('currentUser', JSON.stringify(facilitator));
-
-    return newSession;
-  };
-
-  const joinSession = (sessionId: string, userName: string, role: UserRole) => {
-    // Em uma implementação real, isso buscaria a sessão do servidor
-    // Por enquanto, vamos usar o localStorage ou criar uma nova sessão
-    const storedSession = localStorage.getItem('currentSession');
-    let targetSession: Session | null = null;
-
-    if (storedSession) {
+  useEffect(() => {
+    const loadStoredSession = async () => {
       try {
-        targetSession = JSON.parse(storedSession);
+        const storedSessionId = localStorage.getItem('currentSessionId');
+        const storedUser = localStorage.getItem('currentUser');
+        
+        if (storedSessionId && storedUser) {
+          const user = JSON.parse(storedUser);
+          setCurrentUser(user);
+          
+          // Verificar se a sessão ainda existe no Firebase
+          const sessionExists = await FirebaseService.sessionExists(storedSessionId);
+          
+          if (sessionExists) {
+            // Inscrever-se para mudanças em tempo real
+            const unsubscribe = FirebaseService.subscribeToSession(
+              storedSessionId,
+              (updatedSession) => {
+                if (updatedSession) {
+                  setSession(updatedSession);
+                  // Atualizar currentUser com dados mais recentes
+                  const updatedUser = updatedSession.users.find(u => u.id === user.id);
+                  if (updatedUser) {
+                    setCurrentUser(updatedUser);
+                    localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+                  }
+                } else {
+                  // Sessão foi deletada
+                  clearLocalSession();
+                }
+              }
+            );
+
+            // Reativar presença do usuário
+            await FirebaseService.setUserPresence(storedSessionId, user.id, true);
+
+            // Cleanup ao desmontar
+            return () => {
+              unsubscribe();
+            };
+          } else {
+            // Sessão não existe mais, limpar localStorage
+            clearLocalSession();
+          }
+        }
       } catch (e) {
-        console.error('Error parsing stored session', e);
+        console.error('Error loading stored session', e);
+        clearLocalSession();
+      } finally {
+        setIsLoading(false);
       }
-    }
-
-    if (!targetSession || targetSession.id !== sessionId) {
-      // Criar uma sessão temporária se não existir
-      targetSession = {
-        id: sessionId,
-        name: 'New Session',
-        deckType: 'fibonacci',
-        users: [],
-        isRevealed: false,
-        facilitatorId: '',
-      };
-    }
-
-    const newUser: User = {
-      id: generateId(),
-      name: userName,
-      role,
-      hasVoted: false,
     };
 
-    const updatedSession: Session = {
-      ...targetSession,
-      users: [...targetSession.users, newUser],
+    loadStoredSession();
+  }, []);
+
+  // Configurar listener em tempo real quando a sessão mudar
+  useEffect(() => {
+    if (!session || !currentUser) {
+      setIsLoading(false);
+      return;
+    }
+
+    const unsubscribe = FirebaseService.subscribeToSession(
+      session.id,
+      (updatedSession) => {
+        if (updatedSession) {
+          setSession(updatedSession);
+          // Atualizar currentUser com dados mais recentes
+          const updatedUser = updatedSession.users.find(u => u.id === currentUser.id);
+          if (updatedUser) {
+            setCurrentUser(updatedUser);
+            localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+          }
+        } else {
+          // Sessão foi deletada
+          clearLocalSession();
+        }
+      }
+    );
+
+    setIsLoading(false);
+
+    // Cleanup
+    return () => {
+      unsubscribe();
     };
+  }, [session?.id]);
 
-    setSession(updatedSession);
-    setCurrentUser(newUser);
-    
-    localStorage.setItem('currentSession', JSON.stringify(updatedSession));
-    localStorage.setItem('currentUser', JSON.stringify(newUser));
-  };
-
-  const leaveSession = () => {
+  const clearLocalSession = () => {
     setSession(null);
     setCurrentUser(null);
-    localStorage.removeItem('currentSession');
+    localStorage.removeItem('currentSessionId');
     localStorage.removeItem('currentUser');
   };
 
-  const vote = (userId: string, value: number | string) => {
+  const createSession = async (
+    sessionName: string,
+    deckType: 'fibonacci' | 'powersOf2' | 'tshirt',
+    facilitatorName?: string
+  ): Promise<Session> => {
+    try {
+      const facilitatorId = FirebaseService.generateUserId();
+      const facilitator: User = {
+        id: facilitatorId,
+        name: facilitatorName || 'Facilitator',
+        role: 'facilitator',
+        hasVoted: false,
+      };
+
+      const sessionId = FirebaseService.generateSessionId();
+      
+      const newSession = await FirebaseService.createSession(
+        sessionId,
+        sessionName,
+        deckType,
+        facilitator
+      );
+
+      setSession(newSession);
+      setCurrentUser(facilitator);
+      
+      // Salvar no localStorage para persistência
+      localStorage.setItem('currentSessionId', sessionId);
+      localStorage.setItem('currentUser', JSON.stringify(facilitator));
+
+      return newSession;
+    } catch (error) {
+      console.error('Error creating session:', error);
+      throw error;
+    }
+  };
+
+  const joinSession = async (sessionId: string, userName: string, role: UserRole) => {
+    try {
+      // Verificar se a sessão existe
+      const existingSession = await FirebaseService.getSession(sessionId);
+      
+      if (!existingSession) {
+        throw new Error('Sessão não encontrada');
+      }
+
+      const newUser: User = {
+        id: FirebaseService.generateUserId(),
+        name: userName,
+        role,
+        hasVoted: false,
+      };
+
+      await FirebaseService.joinSession(sessionId, newUser);
+
+      // Buscar sessão atualizada
+      const updatedSession = await FirebaseService.getSession(sessionId);
+      
+      if (updatedSession) {
+        setSession(updatedSession);
+        setCurrentUser(newUser);
+        
+        localStorage.setItem('currentSessionId', sessionId);
+        localStorage.setItem('currentUser', JSON.stringify(newUser));
+      }
+    } catch (error) {
+      console.error('Error joining session:', error);
+      throw error;
+    }
+  };
+
+  const leaveSession = async () => {
+    if (!session || !currentUser) return;
+
+    try {
+      await FirebaseService.leaveSession(session.id, currentUser.id);
+      clearLocalSession();
+    } catch (error) {
+      console.error('Error leaving session:', error);
+      // Limpar localmente mesmo se houver erro
+      clearLocalSession();
+    }
+  };
+
+  const vote = async (userId: string, value: number | string) => {
     if (!session) return;
 
-    const updatedUsers = session.users.map((user) =>
-      user.id === userId
-        ? { ...user, hasVoted: true, vote: value }
-        : user
-    );
-
-    const updatedSession: Session = {
-      ...session,
-      users: updatedUsers,
-    };
-
-    setSession(updatedSession);
-    
-    if (currentUser?.id === userId) {
-      setCurrentUser({ ...currentUser, hasVoted: true, vote: value });
-    }
-
-    localStorage.setItem('currentSession', JSON.stringify(updatedSession));
-    if (currentUser?.id === userId) {
-      localStorage.setItem('currentUser', JSON.stringify({ ...currentUser, hasVoted: true, vote: value }));
+    try {
+      await FirebaseService.vote(session.id, userId, value);
+      // O listener em tempo real vai atualizar o estado automaticamente
+    } catch (error) {
+      console.error('Error voting:', error);
+      throw error;
     }
   };
 
-  const revealCards = () => {
+  const revealCards = async () => {
     if (!session || currentUser?.id !== session.facilitatorId) return;
 
-    const updatedSession: Session = {
-      ...session,
-      isRevealed: true,
-    };
-
-    setSession(updatedSession);
-    localStorage.setItem('currentSession', JSON.stringify(updatedSession));
+    try {
+      await FirebaseService.revealCards(session.id);
+      // O listener em tempo real vai atualizar o estado automaticamente
+    } catch (error) {
+      console.error('Error revealing cards:', error);
+      throw error;
+    }
   };
 
-  const resetRound = () => {
+  const resetRound = async () => {
     if (!session || currentUser?.id !== session.facilitatorId) return;
 
-    const updatedUsers = session.users.map((user) => ({
-      ...user,
-      hasVoted: false,
-      vote: undefined,
-    }));
+    try {
+      await FirebaseService.resetRound(session.id);
+      // O listener em tempo real vai atualizar o estado automaticamente
+    } catch (error) {
+      console.error('Error resetting round:', error);
+      throw error;
+    }
+  };
 
-    const updatedSession: Session = {
-      ...session,
-      users: updatedUsers,
-      isRevealed: false,
+  // Limpar presença ao fechar a aba/navegador
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (session && currentUser) {
+        FirebaseService.setUserPresence(session.id, currentUser.id, false);
+      }
     };
 
-    setSession(updatedSession);
-    localStorage.setItem('currentSession', JSON.stringify(updatedSession));
-  };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [session, currentUser]);
 
   return (
     <SessionContext.Provider
@@ -205,10 +275,10 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
         vote,
         revealCards,
         resetRound,
+        isLoading,
       }}
     >
       {children}
     </SessionContext.Provider>
   );
 };
-

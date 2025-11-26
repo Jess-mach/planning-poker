@@ -16,7 +16,7 @@
   color: white;
 }
 
-.button--primary:hover {
+.button--primary:hover:not(:disabled) {
   background-color: #0056b3;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
@@ -28,7 +28,7 @@
   border: 2px solid #007bff;
 }
 
-.button--secondary:hover {
+.button--secondary:hover:not(:disabled) {
   background-color: #007bff;
   color: white;
 }
@@ -39,7 +39,7 @@
   border: none;
 }
 
-.button--tertiary:hover {
+.button--tertiary:hover:not(:disabled) {
   background-color: rgba(0, 123, 255, 0.1);
 }
 

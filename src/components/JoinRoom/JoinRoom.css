@@ -83,9 +83,25 @@
   color: #007bff;
 }
 
+.join-room__error {
+  padding: 12px 16px;
+  background-color: #fee;
+  border: 1px solid #fcc;
+  border-radius: 8px;
+  color: #c33;
+  font-size: 14px;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
 .join-room__button {
   width: 100%;
   margin-top: 8px;
+}
+
+.join-room__button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .join-room__toggle {
@@ -100,8 +116,13 @@
   text-decoration: underline;
 }
 
-.join-room__toggle:hover {
+.join-room__toggle:hover:not(:disabled) {
   color: #0056b3;
+}
+
+.join-room__toggle:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 @media (max-width: 768px) {

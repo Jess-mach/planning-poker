@@ -18,20 +18,35 @@ export const GameRoom = () => {
   const allVoted = session.users.filter(u => u.role !== 'observer').every(u => u.hasVoted);
   const canReveal = isFacilitator && allVoted && !session.isRevealed;
 
-  const handleReveal = () => {
-    revealCards();
-  };
-
-  const handleReset = () => {
-    if (confirm('Tem certeza que deseja resetar a rodada? Todos os votos serão limpos.')) {
-      resetRound();
+  const handleReveal = async () => {
+    try {
+      await revealCards();
+    } catch (error) {
+      console.error('Erro ao revelar cartas:', error);
+      alert('Erro ao revelar cartas. Tente novamente.');
     }
   };
 
-  const handleLeave = () => {
+  const handleReset = async () => {
+    if (confirm('Tem certeza que deseja resetar a rodada? Todos os votos serão limpos.')) {
+      try {
+        await resetRound();
+      } catch (error) {
+        console.error('Erro ao resetar rodada:', error);
+        alert('Erro ao resetar rodada. Tente novamente.');
+      }
+    }
+  };
+
+  const handleLeave = async () => {
     if (confirm('Tem certeza que deseja sair da sessão?')) {
-      leaveSession();
-      navigate('/');
+      try {
+        await leaveSession();
+        navigate('/');
+      } catch (error) {
+        console.error('Erro ao sair da sessão:', error);
+        navigate('/');
+      }
     }
   };
 
@@ -66,9 +81,14 @@ export const GameRoom = () => {
                 deckType={session.deckType}
                 currentVote={currentUser.vote}
                 isRevealed={session.isRevealed}
-                onVote={(value) => {
+                onVote={async (value) => {
                   if (!session.isRevealed && currentUser) {
-                    vote(currentUser.id, value);
+                    try {
+                      await vote(currentUser.id, value);
+                    } catch (error) {
+                      console.error('Erro ao votar:', error);
+                      alert('Erro ao registrar voto. Tente novamente.');
+                    }
                   }
                 }}
               />
