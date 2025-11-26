@@ -1,0 +1,208 @@
+import { createContext, useContext, useState, ReactNode } from 'react';
+
+export type UserRole = 'facilitator' | 'voter' | 'observer';
+
+export interface User {
+  id: string;
+  name: string;
+  role: UserRole;
+  hasVoted: boolean;
+  vote?: number | string;
+}
+
+export interface Session {
+  id: string;
+  name: string;
+  deckType: 'fibonacci' | 'powersOf2' | 'tshirt';
+  users: User[];
+  isRevealed: boolean;
+  facilitatorId: string;
+}
+
+interface SessionContextType {
+  session: Session | null;
+  currentUser: User | null;
+  createSession: (sessionName: string, deckType: 'fibonacci' | 'powersOf2' | 'tshirt') => Session;
+  joinSession: (sessionId: string, userName: string, role: UserRole) => void;
+  leaveSession: () => void;
+  vote: (userId: string, value: number | string) => void;
+  revealCards: () => void;
+  resetRound: () => void;
+}
+
+const SessionContext = createContext<SessionContextType | undefined>(undefined);
+
+export const useSession = () => {
+  const context = useContext(SessionContext);
+  if (!context) {
+    throw new Error('useSession must be used within SessionProvider');
+  }
+  return context;
+};
+
+export const SessionProvider = ({ children }: { children: ReactNode }) => {
+  const [session, setSession] = useState<Session | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+
+  const generateId = () => {
+    return Math.random().toString(36).substring(2, 15);
+  };
+
+  const createSession = (
+    sessionName: string,
+    deckType: 'fibonacci' | 'powersOf2' | 'tshirt'
+  ): Session => {
+    const facilitatorId = generateId();
+    const facilitator: User = {
+      id: facilitatorId,
+      name: 'Facilitator',
+      role: 'facilitator',
+      hasVoted: false,
+    };
+
+    const newSession: Session = {
+      id: generateId(),
+      name: sessionName,
+      deckType,
+      users: [facilitator],
+      isRevealed: false,
+      facilitatorId,
+    };
+
+    setSession(newSession);
+    setCurrentUser(facilitator);
+    
+    // Salvar no localStorage para persistência
+    localStorage.setItem('currentSession', JSON.stringify(newSession));
+    localStorage.setItem('currentUser', JSON.stringify(facilitator));
+
+    return newSession;
+  };
+
+  const joinSession = (sessionId: string, userName: string, role: UserRole) => {
+    // Em uma implementação real, isso buscaria a sessão do servidor
+    // Por enquanto, vamos usar o localStorage ou criar uma nova sessão
+    const storedSession = localStorage.getItem('currentSession');
+    let targetSession: Session | null = null;
+
+    if (storedSession) {
+      try {
+        targetSession = JSON.parse(storedSession);
+      } catch (e) {
+        console.error('Error parsing stored session', e);
+      }
+    }
+
+    if (!targetSession || targetSession.id !== sessionId) {
+      // Criar uma sessão temporária se não existir
+      targetSession = {
+        id: sessionId,
+        name: 'New Session',
+        deckType: 'fibonacci',
+        users: [],
+        isRevealed: false,
+        facilitatorId: '',
+      };
+    }
+
+    const newUser: User = {
+      id: generateId(),
+      name: userName,
+      role,
+      hasVoted: false,
+    };
+
+    const updatedSession: Session = {
+      ...targetSession,
+      users: [...targetSession.users, newUser],
+    };
+
+    setSession(updatedSession);
+    setCurrentUser(newUser);
+    
+    localStorage.setItem('currentSession', JSON.stringify(updatedSession));
+    localStorage.setItem('currentUser', JSON.stringify(newUser));
+  };
+
+  const leaveSession = () => {
+    setSession(null);
+    setCurrentUser(null);
+    localStorage.removeItem('currentSession');
+    localStorage.removeItem('currentUser');
+  };
+
+  const vote = (userId: string, value: number | string) => {
+    if (!session) return;
+
+    const updatedUsers = session.users.map((user) =>
+      user.id === userId
+        ? { ...user, hasVoted: true, vote: value }
+        : user
+    );
+
+    const updatedSession: Session = {
+      ...session,
+      users: updatedUsers,
+    };
+
+    setSession(updatedSession);
+    
+    if (currentUser?.id === userId) {
+      setCurrentUser({ ...currentUser, hasVoted: true, vote: value });
+    }
+
+    localStorage.setItem('currentSession', JSON.stringify(updatedSession));
+    if (currentUser?.id === userId) {
+      localStorage.setItem('currentUser', JSON.stringify({ ...currentUser, hasVoted: true, vote: value }));
+    }
+  };
+
+  const revealCards = () => {
+    if (!session || currentUser?.id !== session.facilitatorId) return;
+
+    const updatedSession: Session = {
+      ...session,
+      isRevealed: true,
+    };
+
+    setSession(updatedSession);
+    localStorage.setItem('currentSession', JSON.stringify(updatedSession));
+  };
+
+  const resetRound = () => {
+    if (!session || currentUser?.id !== session.facilitatorId) return;
+
+    const updatedUsers = session.users.map((user) => ({
+      ...user,
+      hasVoted: false,
+      vote: undefined,
+    }));
+
+    const updatedSession: Session = {
+      ...session,
+      users: updatedUsers,
+      isRevealed: false,
+    };
+
+    setSession(updatedSession);
+    localStorage.setItem('currentSession', JSON.stringify(updatedSession));
+  };
+
+  return (
+    <SessionContext.Provider
+      value={{
+        session,
+        currentUser,
+        createSession,
+        joinSession,
+        leaveSession,
+        vote,
+        revealCards,
+        resetRound,
+      }}
+    >
+      {children}
+    </SessionContext.Provider>
+  );
+};
+
