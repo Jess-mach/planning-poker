@@ -28,7 +28,8 @@ export const JoinRoom = ({ sessionId, onJoin }: JoinRoomProps) => {
         alert('Por favor, informe o nome da sessão');
         return;
       }
-      createSession(sessionName, deckType);
+      // Ao criar, o usuário será o facilitador
+      createSession(sessionName, deckType, userName);
     } else {
       if (!sessionId) {
         alert('ID da sessão não fornecido');

@@ -6,7 +6,7 @@ import { ParticipantsList } from '../ParticipantsList/ParticipantsList';
 import './GameRoom.css';
 
 export const GameRoom = () => {
-  const { session, currentUser, revealCards, resetRound, leaveSession } = useSession();
+  const { session, currentUser, revealCards, resetRound, leaveSession, vote } = useSession();
 
   if (!session || !currentUser) {
     return null;
@@ -65,8 +65,7 @@ export const GameRoom = () => {
                 currentVote={currentUser.vote}
                 isRevealed={session.isRevealed}
                 onVote={(value) => {
-                  if (!session.isRevealed) {
-                    const { vote } = useSession();
+                  if (!session.isRevealed && currentUser) {
                     vote(currentUser.id, value);
                   }
                 }}

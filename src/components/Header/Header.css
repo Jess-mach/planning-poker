@@ -16,6 +16,20 @@
 .header__logo {
   display: flex;
   align-items: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: opacity 0.3s ease, transform 0.2s ease;
+}
+
+.header__logo:hover {
+  opacity: 0.8;
+  transform: scale(1.05);
+}
+
+.header__logo:active {
+  transform: scale(0.98);
 }
 
 .header__nav {
@@ -35,12 +49,67 @@
   color: #007bff;
 }
 
+.header__actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.header__share-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.header__share-button:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+.header__share-button:active {
+  transform: translateY(0);
+}
+
+.header__share-button--success {
+  background-color: #28a745;
+  border-color: #28a745;
+}
+
+.header__share-button--success:hover {
+  background-color: #218838;
+  border-color: #218838;
+}
+
+.header__share-button svg {
+  width: 20px;
+  height: 20px;
+}
+
 @media (max-width: 768px) {
   .header__nav {
     gap: 16px;
   }
   
   .header__link {
+    display: none;
+  }
+
+  .header__share-button {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+
+  .header__share-button span {
     display: none;
   }
 }

@@ -1,28 +1,12 @@
 import { createContext, useContext, useState, ReactNode } from 'react';
+import type { User, Session, UserRole } from '../types/session';
 
-export type UserRole = 'facilitator' | 'voter' | 'observer';
-
-export interface User {
-  id: string;
-  name: string;
-  role: UserRole;
-  hasVoted: boolean;
-  vote?: number | string;
-}
-
-export interface Session {
-  id: string;
-  name: string;
-  deckType: 'fibonacci' | 'powersOf2' | 'tshirt';
-  users: User[];
-  isRevealed: boolean;
-  facilitatorId: string;
-}
+export type { User, Session, UserRole };
 
 interface SessionContextType {
   session: Session | null;
   currentUser: User | null;
-  createSession: (sessionName: string, deckType: 'fibonacci' | 'powersOf2' | 'tshirt') => Session;
+  createSession: (sessionName: string, deckType: 'fibonacci' | 'powersOf2' | 'tshirt', facilitatorName?: string) => Session;
   joinSession: (sessionId: string, userName: string, role: UserRole) => void;
   leaveSession: () => void;
   vote: (userId: string, value: number | string) => void;
@@ -41,8 +25,27 @@ export const useSession = () => {
 };
 
 export const SessionProvider = ({ children }: { children: ReactNode }) => {
-  const [session, setSession] = useState<Session | null>(null);
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  // Tentar carregar sessão do localStorage ao inicializar
+  const loadStoredSession = (): { session: Session | null; user: User | null } => {
+    try {
+      const storedSession = localStorage.getItem('currentSession');
+      const storedUser = localStorage.getItem('currentUser');
+      
+      if (storedSession && storedUser) {
+        return {
+          session: JSON.parse(storedSession),
+          user: JSON.parse(storedUser),
+        };
+      }
+    } catch (e) {
+      console.error('Error loading stored session', e);
+    }
+    return { session: null, user: null };
+  };
+
+  const { session: initialSession, user: initialUser } = loadStoredSession();
+  const [session, setSession] = useState<Session | null>(initialSession);
+  const [currentUser, setCurrentUser] = useState<User | null>(initialUser);
 
   const generateId = () => {
     return Math.random().toString(36).substring(2, 15);
@@ -50,12 +53,13 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
 
   const createSession = (
     sessionName: string,
-    deckType: 'fibonacci' | 'powersOf2' | 'tshirt'
+    deckType: 'fibonacci' | 'powersOf2' | 'tshirt',
+    facilitatorName?: string
   ): Session => {
     const facilitatorId = generateId();
     const facilitator: User = {
       id: facilitatorId,
-      name: 'Facilitator',
+      name: facilitatorName || 'Facilitator',
       role: 'facilitator',
       hasVoted: false,
     };

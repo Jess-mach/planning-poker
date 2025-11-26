@@ -2,7 +2,11 @@ import './HeroSection.css';
 import { Container } from '../Container/Container';
 import { Button } from '../Button/Button';
 
-export const HeroSection = () => {
+interface HeroSectionProps {
+  onStartGame?: () => void;
+}
+
+export const HeroSection = ({ onStartGame }: HeroSectionProps) => {
   return (
     <section className="hero">
       <Container>
@@ -15,7 +19,7 @@ export const HeroSection = () => {
             No login required. Simple, fast, and effective.
           </p>
           <div className="hero__actions">
-            <Button variant="primary" size="large">
+            <Button variant="primary" size="large" onClick={onStartGame}>
               Start new game
             </Button>
             <Button variant="secondary" size="large">
