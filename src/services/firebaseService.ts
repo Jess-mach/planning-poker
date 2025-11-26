@@ -8,7 +8,6 @@ import {
   serverTimestamp,
   onDisconnect
 } from 'firebase/database';
-import type { DatabaseReference } from 'firebase/database';
 import { database } from '../config/firebase';
 import type { Session, User } from '../types/session';
 
