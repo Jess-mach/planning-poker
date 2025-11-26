@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { SessionProvider, useSession } from './contexts/SessionContext';
 import { Header } from './components/Header/Header';
 import { Footer } from './components/Footer/Footer';
@@ -9,13 +9,18 @@ import './App.css';
 
 const AppContent = () => {
   const location = useLocation();
-  const { session } = useSession();
+  const navigate = useNavigate();
+  const { session, leaveSession } = useSession();
   
   // Determinar se deve mostrar o botão "Start new game"
   const showStartGameButton = location.pathname === '/';
 
-  const handleStartGame = () => {
-    window.location.href = '/join';
+  const handleStartGame = async () => {
+    // Sair da sessão anterior se houver
+    if (session) {
+      await leaveSession();
+    }
+    navigate('/join', { replace: true, state: { createNew: true } });
   };
 
   return (
