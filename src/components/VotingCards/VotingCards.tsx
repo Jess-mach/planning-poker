@@ -8,9 +8,9 @@ interface VotingCardsProps {
   onVote: (value: number | string) => void;
 }
 
-const FIBONACCI_DECK = [0, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, '?'];
-const POWERS_OF_2_DECK = [0, 1, 2, 4, 8, 16, 32, 64, '?'];
-const TSHIRT_DECK = ['XS', 'S', 'M', 'L', 'XL', '?'];
+const FIBONACCI_DECK = [0, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, '?', '☕'];
+const POWERS_OF_2_DECK = [0, 1, 2, 4, 8, 16, 32, 64, '?', '☕'];
+const TSHIRT_DECK = ['XS', 'S', 'M', 'L', 'XL', '?', '☕'];
 
 export const VotingCards = ({ deckType, currentVote, isRevealed, onVote }: VotingCardsProps) => {
   const { currentUser } = useSession();

@@ -32,12 +32,12 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Tentar carregar sessão do localStorage ao inicializar
+  // Tentar carregar sessão do sessionStorage ao inicializar
   useEffect(() => {
     const loadStoredSession = async () => {
       try {
-        const storedSessionId = localStorage.getItem('currentSessionId');
-        const storedUser = localStorage.getItem('currentUser');
+        const storedSessionId = sessionStorage.getItem('currentSessionId');
+        const storedUser = sessionStorage.getItem('currentUser');
         
         if (storedSessionId && storedUser) {
           const user = JSON.parse(storedUser);
@@ -57,7 +57,7 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
                   const updatedUser = updatedSession.users.find(u => u.id === user.id);
                   if (updatedUser) {
                     setCurrentUser(updatedUser);
-                    localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+                    sessionStorage.setItem('currentUser', JSON.stringify(updatedUser));
                   }
                 } else {
                   // Sessão foi deletada
@@ -74,7 +74,7 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
               unsubscribe();
             };
           } else {
-            // Sessão não existe mais, limpar localStorage
+            // Sessão não existe mais, limpar sessionStorage
             clearLocalSession();
           }
         }
@@ -105,7 +105,7 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
           const updatedUser = updatedSession.users.find(u => u.id === currentUser.id);
           if (updatedUser) {
             setCurrentUser(updatedUser);
-            localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+            sessionStorage.setItem('currentUser', JSON.stringify(updatedUser));
           }
         } else {
           // Sessão foi deletada
@@ -125,8 +125,8 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
   const clearLocalSession = () => {
     setSession(null);
     setCurrentUser(null);
-    localStorage.removeItem('currentSessionId');
-    localStorage.removeItem('currentUser');
+    sessionStorage.removeItem('currentSessionId');
+    sessionStorage.removeItem('currentUser');
   };
 
   const createSession = async (
@@ -155,9 +155,9 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
       setSession(newSession);
       setCurrentUser(facilitator);
       
-      // Salvar no localStorage para persistência
-      localStorage.setItem('currentSessionId', sessionId);
-      localStorage.setItem('currentUser', JSON.stringify(facilitator));
+      // Salvar no sessionStorage para persistência
+      sessionStorage.setItem('currentSessionId', sessionId);
+      sessionStorage.setItem('currentUser', JSON.stringify(facilitator));
 
       return newSession;
     } catch (error) {
@@ -191,8 +191,8 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
         setSession(updatedSession);
         setCurrentUser(newUser);
         
-        localStorage.setItem('currentSessionId', sessionId);
-        localStorage.setItem('currentUser', JSON.stringify(newUser));
+        sessionStorage.setItem('currentSessionId', sessionId);
+        sessionStorage.setItem('currentUser', JSON.stringify(newUser));
       }
     } catch (error) {
       console.error('Error joining session:', error);
@@ -226,7 +226,7 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const revealCards = async () => {
-    if (!session || currentUser?.id !== session.facilitatorId) return;
+    if (!session) return;
 
     try {
       await FirebaseService.revealCards(session.id);

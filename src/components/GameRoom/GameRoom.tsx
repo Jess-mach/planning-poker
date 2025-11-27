@@ -16,7 +16,7 @@ export const GameRoom = () => {
 
   const isFacilitator = currentUser.id === session.facilitatorId;
   const allVoted = session.users.filter(u => u.role !== 'observer').every(u => u.hasVoted);
-  const canReveal = isFacilitator && allVoted && !session.isRevealed;
+  const canReveal = allVoted && !session.isRevealed;
 
   const handleReveal = async () => {
     try {
@@ -101,25 +101,23 @@ export const GameRoom = () => {
               </div>
             )}
 
-            {isFacilitator && (
-              <div className="game-room__facilitator-actions">
-                {canReveal && (
-                  <Button variant="primary" size="large" onClick={handleReveal}>
-                    Revelar Cartas
-                  </Button>
-                )}
-                {session.isRevealed && (
-                  <Button variant="secondary" size="large" onClick={handleReset}>
-                    Nova Rodada
-                  </Button>
-                )}
-                {!allVoted && !session.isRevealed && (
-                  <p className="game-room__waiting">
-                    Aguardando todos votarem... ({session.users.filter(u => u.hasVoted && u.role !== 'observer').length}/{session.users.filter(u => u.role !== 'observer').length})
-                  </p>
-                )}
-              </div>
-            )}
+            <div className="game-room__facilitator-actions">
+              {canReveal && (
+                <Button variant="primary" size="large" onClick={handleReveal}>
+                  Revelar Cartas
+                </Button>
+              )}
+              {session.isRevealed && isFacilitator && (
+                <Button variant="secondary" size="large" onClick={handleReset}>
+                  Nova Rodada
+                </Button>
+              )}
+              {!allVoted && !session.isRevealed && (
+                <p className="game-room__waiting">
+                  Aguardando todos votarem... ({session.users.filter(u => u.hasVoted && u.role !== 'observer').length}/{session.users.filter(u => u.role !== 'observer').length})
+                </p>
+              )}
+            </div>
           </div>
 
           <div className="game-room__sidebar">
