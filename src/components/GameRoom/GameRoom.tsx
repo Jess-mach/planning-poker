@@ -50,13 +50,34 @@ export const GameRoom = () => {
     }
   };
 
+  const handleCopyRoomCode = () => {
+    navigator.clipboard.writeText(session.roomCode).then(() => {
+      alert('Código da sala copiado!');
+    }).catch(() => {
+      // Fallback para navegadores que não suportam clipboard API
+      prompt('Copie o código da sala:', session.roomCode);
+    });
+  };
+
   return (
     <div className="game-room">
       <Container>
         <div className="game-room__header">
           <div>
             <h1 className="game-room__title">{session.name}</h1>
-            <p className="game-room__session-id">ID da Sessão: {session.id}</p>
+            <div className="game-room__code-container">
+              <span className="game-room__code-label">Código da Sala:</span>
+              <span className="game-room__code" onClick={handleCopyRoomCode} title="Clique para copiar">
+                {session.roomCode}
+              </span>
+              <button 
+                className="game-room__copy-btn" 
+                onClick={handleCopyRoomCode}
+                title="Copiar código"
+              >
+                📋
+              </button>
+            </div>
           </div>
           <Button variant="secondary" size="medium" onClick={handleLeave}>
             Sair da Sessão

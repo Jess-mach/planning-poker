@@ -9,7 +9,7 @@ interface SessionContextType {
   session: Session | null;
   currentUser: User | null;
   createSession: (sessionName: string, deckType: 'fibonacci' | 'powersOf2' | 'tshirt', facilitatorName?: string) => Promise<Session>;
-  joinSession: (sessionId: string, userName: string, role: UserRole) => Promise<void>;
+  joinSession: (sessionIdOrCode: string, userName: string, role: UserRole) => Promise<Session>;
   leaveSession: () => Promise<void>;
   vote: (userId: string, value: number | string) => Promise<void>;
   revealCards: () => Promise<void>;
@@ -144,9 +144,11 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
       };
 
       const sessionId = FirebaseService.generateSessionId();
+      const roomCode = await FirebaseService.generateUniqueRoomCode();
       
       const newSession = await FirebaseService.createSession(
         sessionId,
+        roomCode,
         sessionName,
         deckType,
         facilitator
@@ -166,10 +168,22 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const joinSession = async (sessionId: string, userName: string, role: UserRole) => {
+  const joinSession = async (sessionIdOrCode: string, userName: string, role: UserRole): Promise<Session> => {
     try {
-      // Verificar se a sessão existe
-      const existingSession = await FirebaseService.getSession(sessionId);
+      let existingSession = null;
+      
+      // Se parece com um código de sala (6 caracteres, alternando letra/número)
+      const isRoomCode = /^[A-Za-z][0-9][A-Za-z][0-9][A-Za-z][0-9]$/.test(sessionIdOrCode);
+      
+      if (isRoomCode) {
+        // Buscar pelo código da sala
+        existingSession = await FirebaseService.getSessionByRoomCode(sessionIdOrCode);
+      }
+      
+      // Se não encontrou pelo código, tentar pelo ID
+      if (!existingSession) {
+        existingSession = await FirebaseService.getSession(sessionIdOrCode);
+      }
       
       if (!existingSession) {
         throw new Error('Sessão não encontrada');
@@ -182,18 +196,22 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
         hasVoted: false,
       };
 
-      await FirebaseService.joinSession(sessionId, newUser);
+      await FirebaseService.joinSession(existingSession.id, newUser);
 
       // Buscar sessão atualizada
-      const updatedSession = await FirebaseService.getSession(sessionId);
+      const updatedSession = await FirebaseService.getSession(existingSession.id);
       
       if (updatedSession) {
         setSession(updatedSession);
         setCurrentUser(newUser);
         
-        sessionStorage.setItem('currentSessionId', sessionId);
+        sessionStorage.setItem('currentSessionId', existingSession.id);
         sessionStorage.setItem('currentUser', JSON.stringify(newUser));
+        
+        return updatedSession;
       }
+      
+      return existingSession;
     } catch (error) {
       console.error('Error joining session:', error);
       throw error;

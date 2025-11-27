@@ -10,6 +10,7 @@ export interface User {
 
 export interface Session {
   id: string;
+  roomCode: string;
   name: string;
   deckType: 'fibonacci' | 'powersOf2' | 'tshirt';
   users: User[];
