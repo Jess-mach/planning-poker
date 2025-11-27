@@ -172,11 +172,13 @@ export class FirebaseService {
       throw new Error('Sessão não encontrada');
     }
 
-    const updatedUsers = session.users.map(user => ({
-      ...user,
-      hasVoted: false,
-      vote: undefined,
-    }));
+    const updatedUsers = session.users.map(user => {
+      const { vote, ...userWithoutVote } = user;
+      return {
+        ...userWithoutVote,
+        hasVoted: false,
+      };
+    });
 
     const sessionRef = ref(database, `sessions/${sessionId}`);
     await update(sessionRef, {
