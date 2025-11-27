@@ -19,6 +19,7 @@ export class FirebaseService {
    */
   static async createSession(
     sessionId: string,
+    roomCode: string,
     sessionName: string,
     deckType: 'fibonacci' | 'powersOf2' | 'tshirt',
     facilitator: User
@@ -27,6 +28,7 @@ export class FirebaseService {
     
     const newSession: Session = {
       id: sessionId,
+      roomCode,
       name: sessionName,
       deckType,
       users: [facilitator],
@@ -60,6 +62,7 @@ export class FirebaseService {
     const data = snapshot.val();
     return {
       id: data.id,
+      roomCode: data.roomCode || '',
       name: data.name,
       deckType: data.deckType,
       users: data.users || [],
@@ -206,6 +209,7 @@ export class FirebaseService {
       const data = snapshot.val();
       const session: Session = {
         id: data.id,
+        roomCode: data.roomCode || '',
         name: data.name,
         deckType: data.deckType,
         users: data.users || [],
@@ -280,6 +284,85 @@ export class FirebaseService {
    */
   static generateUserId(): string {
     return Math.random().toString(36).substring(2, 15);
+  }
+
+  /**
+   * Gerar código de sala de 6 caracteres
+   * Formato: alternância entre letra maiúscula e número (ex: A1B2C3)
+   */
+  static generateRoomCode(): string {
+    const letters = 'ABCDEFGHJKLMNPQRSTUVWXYZ'; // Sem I e O para evitar confusão com 1 e 0
+    const numbers = '23456789'; // Sem 0 e 1 para evitar confusão com O e I
+    
+    let code = '';
+    for (let i = 0; i < 6; i++) {
+      if (i % 2 === 0) {
+        // Posições pares: letras (0, 2, 4)
+        code += letters.charAt(Math.floor(Math.random() * letters.length));
+      } else {
+        // Posições ímpares: números (1, 3, 5)
+        code += numbers.charAt(Math.floor(Math.random() * numbers.length));
+      }
+    }
+    return code;
+  }
+
+  /**
+   * Buscar sessão pelo código da sala
+   */
+  static async getSessionByRoomCode(roomCode: string): Promise<Session | null> {
+    const sessionsRef = ref(database, 'sessions');
+    const snapshot = await get(sessionsRef);
+    
+    if (!snapshot.exists()) {
+      return null;
+    }
+
+    const sessions = snapshot.val();
+    
+    // Buscar sessão com o código correspondente (case insensitive)
+    const normalizedCode = roomCode.toUpperCase();
+    
+    for (const sessionId of Object.keys(sessions)) {
+      const sessionData = sessions[sessionId];
+      if (sessionData.roomCode && sessionData.roomCode.toUpperCase() === normalizedCode) {
+        return {
+          id: sessionData.id,
+          roomCode: sessionData.roomCode,
+          name: sessionData.name,
+          deckType: sessionData.deckType,
+          users: sessionData.users || [],
+          isRevealed: sessionData.isRevealed || false,
+          facilitatorId: sessionData.facilitatorId,
+        };
+      }
+    }
+    
+    return null;
+  }
+
+  /**
+   * Verificar se um código de sala já existe
+   */
+  static async roomCodeExists(roomCode: string): Promise<boolean> {
+    const session = await this.getSessionByRoomCode(roomCode);
+    return session !== null;
+  }
+
+  /**
+   * Gerar código de sala único (verifica se já existe)
+   */
+  static async generateUniqueRoomCode(): Promise<string> {
+    let code = this.generateRoomCode();
+    let attempts = 0;
+    const maxAttempts = 10;
+    
+    while (await this.roomCodeExists(code) && attempts < maxAttempts) {
+      code = this.generateRoomCode();
+      attempts++;
+    }
+    
+    return code;
   }
 }
 
