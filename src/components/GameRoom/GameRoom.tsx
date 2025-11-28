@@ -22,29 +22,29 @@ export const GameRoom = () => {
     try {
       await revealCards();
     } catch (error) {
-      console.error('Erro ao revelar cartas:', error);
-      alert('Erro ao revelar cartas. Tente novamente.');
+      console.error('Error revealing cards:', error);
+      alert('Error revealing cards. Please try again.');
     }
   };
 
   const handleReset = async () => {
-    if (confirm('Tem certeza que deseja resetar a rodada? Todos os votos serão limpos.')) {
+    if (confirm('Are you sure you want to reset the round? All votes will be cleared.')) {
       try {
         await resetRound();
       } catch (error) {
-        console.error('Erro ao resetar rodada:', error);
-        alert('Erro ao resetar rodada. Tente novamente.');
+        console.error('Error resetting round:', error);
+        alert('Error resetting round. Please try again.');
       }
     }
   };
 
   const handleLeave = async () => {
-    if (confirm('Tem certeza que deseja sair da sessão?')) {
+    if (confirm('Are you sure you want to leave the session?')) {
       try {
         await leaveSession();
         navigate('/');
       } catch (error) {
-        console.error('Erro ao sair da sessão:', error);
+        console.error('Error leaving session:', error);
         navigate('/');
       }
     }
@@ -52,10 +52,10 @@ export const GameRoom = () => {
 
   const handleCopyRoomCode = () => {
     navigator.clipboard.writeText(session.roomCode).then(() => {
-      alert('Código da sala copiado!');
+      alert('Room code copied!');
     }).catch(() => {
       // Fallback para navegadores que não suportam clipboard API
-      prompt('Copie o código da sala:', session.roomCode);
+      prompt('Copy the room code:', session.roomCode);
     });
   };
 
@@ -66,21 +66,21 @@ export const GameRoom = () => {
           <div>
             <h1 className="game-room__title">{session.name}</h1>
             <div className="game-room__code-container">
-              <span className="game-room__code-label">Código da Sala:</span>
-              <span className="game-room__code" onClick={handleCopyRoomCode} title="Clique para copiar">
+              <span className="game-room__code-label">Room Code:</span>
+              <span className="game-room__code" onClick={handleCopyRoomCode} title="Click to copy">
                 {session.roomCode}
               </span>
               <button 
                 className="game-room__copy-btn" 
                 onClick={handleCopyRoomCode}
-                title="Copiar código"
+                title="Copy code"
               >
                 📋
               </button>
             </div>
           </div>
           <Button variant="secondary" size="medium" onClick={handleLeave}>
-            Sair da Sessão
+            Leave Session
           </Button>
         </div>
 
@@ -88,11 +88,11 @@ export const GameRoom = () => {
           <div className="game-room__main">
             <div className="game-room__info">
               <p className="game-room__user-info">
-                Você está como: <strong>{currentUser.name}</strong> ({currentUser.role === 'facilitator' ? 'Facilitador' : currentUser.role === 'voter' ? 'Votante' : 'Observador'})
+                You are: <strong>{currentUser.name}</strong> ({currentUser.role === 'facilitator' ? 'Facilitator' : currentUser.role === 'voter' ? 'Voter' : 'Observer'})
               </p>
               {currentUser.hasVoted && (
                 <p className="game-room__vote-status">
-                  ✓ Você votou: <strong>{currentUser.vote}</strong>
+                  ✓ You voted: <strong>{currentUser.vote}</strong>
                 </p>
               )}
             </div>
@@ -117,25 +117,25 @@ export const GameRoom = () => {
 
             {currentUser.role === 'observer' && (
               <div className="game-room__observer-message">
-                <p>Você está como observador e não pode votar.</p>
-                <p>Aguarde os participantes votarem e o facilitador revelar as cartas.</p>
+                <p>You are an observer and cannot vote.</p>
+                <p>Wait for participants to vote and for the facilitator to reveal the cards.</p>
               </div>
             )}
 
             <div className="game-room__facilitator-actions">
               {canReveal && (
                 <Button variant="primary" size="large" onClick={handleReveal}>
-                  Revelar Cartas
+                  Reveal Cards
                 </Button>
               )}
               {session.isRevealed && isFacilitator && (
                 <Button variant="secondary" size="large" onClick={handleReset}>
-                  Nova Rodada
+                  New Round
                 </Button>
               )}
               {!allVoted && !session.isRevealed && (
                 <p className="game-room__waiting">
-                  Aguardando todos votarem... ({session.users.filter(u => u.hasVoted && u.role !== 'observer').length}/{session.users.filter(u => u.role !== 'observer').length})
+                  Waiting for everyone to vote... ({session.users.filter(u => u.hasVoted && u.role !== 'observer').length}/{session.users.filter(u => u.role !== 'observer').length})
                 </p>
               )}
             </div>

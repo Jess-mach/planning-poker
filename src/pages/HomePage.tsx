@@ -9,7 +9,7 @@ export const HomePage = () => {
   const { session, leaveSession } = useSession();
 
   const handleStartGame = async () => {
-    // Sair da sessão anterior se houver
+    // Leave previous session if any
     if (session) {
       await leaveSession();
     }

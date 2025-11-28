@@ -11,11 +11,11 @@ export const ParticipantsList = ({ participants, isRevealed, currentUserId }: Pa
   const getRoleLabel = (role: string) => {
     switch (role) {
       case 'facilitator':
-        return 'Facilitador';
+        return 'Facilitator';
       case 'voter':
-        return 'Votante';
+        return 'Voter';
       case 'observer':
-        return 'Observador';
+        return 'Observer';
       default:
         return role;
     }
@@ -37,7 +37,7 @@ export const ParticipantsList = ({ participants, isRevealed, currentUserId }: Pa
   return (
     <div className="participants-list">
       <h3 className="participants-list__title">
-        Participantes ({participants.length})
+        Participants ({participants.length})
       </h3>
       <div className="participants-list__items">
         {participants.map((participant) => {
@@ -54,7 +54,7 @@ export const ParticipantsList = ({ participants, isRevealed, currentUserId }: Pa
                 </span>
                 <span className="participant-item__name">
                   {participant.name}
-                  {isCurrentUser && ' (Você)'}
+                  {isCurrentUser && ' (You)'}
                 </span>
               </div>
               <div className="participant-item__info">
@@ -65,18 +65,18 @@ export const ParticipantsList = ({ participants, isRevealed, currentUserId }: Pa
                   <div className="participant-item__status">
                     {participant.hasVoted ? (
                       <span className="participant-item__status--voted">
-                        ✓ Votou
+                        ✓ Voted
                       </span>
                     ) : (
                       <span className="participant-item__status--waiting">
-                        ⏳ Aguardando
+                        ⏳ Waiting
                       </span>
                     )}
                   </div>
                 )}
                 {isRevealed && participant.hasVoted && participant.vote !== undefined && (
                   <div className="participant-item__vote">
-                    Voto: <strong>{participant.vote}</strong>
+                    Vote: <strong>{participant.vote}</strong>
                   </div>
                 )}
               </div>

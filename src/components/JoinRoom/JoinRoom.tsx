@@ -22,7 +22,7 @@ export const JoinRoom = ({ sessionId, onJoin }: JoinRoomProps) => {
   const [error, setError] = useState<string | null>(null);
   const [roomCode, setRoomCode] = useState(sessionId || '');
 
-  // Formatar o código da sala enquanto digita (adicionar maiúsculas)
+  // Format room code while typing (uppercase)
   const handleRoomCodeChange = (value: string) => {
     // Remove espaços e limita a 6 caracteres
     const cleanedValue = value.replace(/\s/g, '').toUpperCase().substring(0, 6);
@@ -31,7 +31,7 @@ export const JoinRoom = ({ sessionId, onJoin }: JoinRoomProps) => {
 
   const handleJoin = async () => {
     if (!userName.trim()) {
-      setError('Por favor, informe seu nome');
+      setError('Please enter your name');
       return;
     }
 
@@ -43,7 +43,7 @@ export const JoinRoom = ({ sessionId, onJoin }: JoinRoomProps) => {
 
       if (isCreating) {
         if (!sessionName.trim()) {
-          setError('Por favor, informe o nome da sessão');
+          setError('Please enter the session name');
           setIsLoading(false);
           return;
         }
@@ -52,7 +52,7 @@ export const JoinRoom = ({ sessionId, onJoin }: JoinRoomProps) => {
         gameId = newSession.id;
       } else {
         if (!roomCode.trim()) {
-          setError('Por favor, informe o código da sala');
+          setError('Please enter the room code');
           setIsLoading(false);
           return;
         }
@@ -67,14 +67,14 @@ export const JoinRoom = ({ sessionId, onJoin }: JoinRoomProps) => {
         onJoin();
       }
 
-      // Redirecionar para a página do jogo
+      // Redirect to the game page
       navigate(`/game/${gameId}`);
     } catch (err) {
-      console.error('Erro ao entrar/criar sessão:', err);
+      console.error('Error joining/creating session:', err);
       setError(
         isCreating 
-          ? 'Erro ao criar sessão. Tente novamente.' 
-          : 'Sala não encontrada. Verifique o código e tente novamente.'
+          ? 'Error creating session. Please try again.' 
+          : 'Room not found. Check the code and try again.'
       );
     } finally {
       setIsLoading(false);
@@ -86,14 +86,14 @@ export const JoinRoom = ({ sessionId, onJoin }: JoinRoomProps) => {
       <Container>
         <div className="join-room__content">
           <h1 className="join-room__title">
-            {isCreating ? 'Criar Nova Sessão' : 'Entrar na Sessão'}
+            {isCreating ? 'Create New Session' : 'Join Session'}
           </h1>
 
           {isCreating && (
             <>
               <div className="join-room__field">
                 <label htmlFor="sessionName" className="join-room__label">
-                  Nome da Sessão
+                  Session Name
                 </label>
                 <input
                   id="sessionName"
@@ -106,7 +106,7 @@ export const JoinRoom = ({ sessionId, onJoin }: JoinRoomProps) => {
               </div>
 
               <div className="join-room__field">
-                <label className="join-room__label">Tipo de Baralho</label>
+                <label className="join-room__label">Deck Type</label>
                 <div className="join-room__radio-group">
                   <label className="join-room__radio">
                     <input
@@ -126,7 +126,7 @@ export const JoinRoom = ({ sessionId, onJoin }: JoinRoomProps) => {
                       checked={deckType === 'powersOf2'}
                       onChange={() => setDeckType('powersOf2')}
                     />
-                    <span>Potências de 2 (0, 1, 2, 4, 8, 16, 32...)</span>
+                    <span>Powers of 2 (0, 1, 2, 4, 8, 16, 32...)</span>
                   </label>
                   <label className="join-room__radio">
                     <input
@@ -146,7 +146,7 @@ export const JoinRoom = ({ sessionId, onJoin }: JoinRoomProps) => {
           {!isCreating && (
             <div className="join-room__field">
               <label htmlFor="roomCode" className="join-room__label">
-                Código da Sala
+                Room Code
               </label>
               <input
                 id="roomCode"
@@ -159,13 +159,13 @@ export const JoinRoom = ({ sessionId, onJoin }: JoinRoomProps) => {
                 maxLength={6}
                 autoComplete="off"
               />
-              <span className="join-room__hint">Digite o código de 6 caracteres compartilhado pelo facilitador</span>
+              <span className="join-room__hint">Enter the 6-character code shared by the facilitator</span>
             </div>
           )}
 
           <div className="join-room__field">
             <label htmlFor="userName" className="join-room__label">
-              Seu Nome
+              Your Name
             </label>
             <input
               id="userName"
@@ -190,7 +190,7 @@ export const JoinRoom = ({ sessionId, onJoin }: JoinRoomProps) => {
                     checked={role === 'voter'}
                     onChange={() => setRole('voter')}
                   />
-                  <span>Votante</span>
+                  <span>Voter</span>
                 </label>
                 <label className="join-room__radio">
                   <input
@@ -200,7 +200,7 @@ export const JoinRoom = ({ sessionId, onJoin }: JoinRoomProps) => {
                     checked={role === 'observer'}
                     onChange={() => setRole('observer')}
                   />
-                  <span>Observador</span>
+                  <span>Observer</span>
                 </label>
               </div>
             </div>
@@ -219,7 +219,7 @@ export const JoinRoom = ({ sessionId, onJoin }: JoinRoomProps) => {
             className="join-room__button"
             disabled={isLoading}
           >
-            {isLoading ? 'Conectando...' : isCreating ? 'Criar Sessão' : 'Entrar na Sessão'}
+            {isLoading ? 'Connecting...' : isCreating ? 'Create Session' : 'Join Session'}
           </Button>
 
           {isCreating && (
@@ -232,7 +232,7 @@ export const JoinRoom = ({ sessionId, onJoin }: JoinRoomProps) => {
               }}
               disabled={isLoading}
             >
-              Já tenho um código de sala
+              I already have a room code
             </button>
           )}
           
@@ -247,7 +247,7 @@ export const JoinRoom = ({ sessionId, onJoin }: JoinRoomProps) => {
               }}
               disabled={isLoading}
             >
-              Criar nova sessão
+              Create new session
             </button>
           )}
         </div>

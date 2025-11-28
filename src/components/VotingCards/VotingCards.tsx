@@ -38,7 +38,7 @@ export const VotingCards = ({ deckType, currentVote, isRevealed, onVote }: Votin
   return (
     <div className="voting-cards">
       <h3 className="voting-cards__title">
-        {isRevealed ? 'Votos Revelados' : 'Selecione sua Estimativa'}
+        {isRevealed ? 'Votes Revealed' : 'Select your estimate'}
       </h3>
       <div className="voting-cards__deck">
         {deck.map((value, index) => {
@@ -62,7 +62,7 @@ export const VotingCards = ({ deckType, currentVote, isRevealed, onVote }: Votin
       </div>
       {isRevealed && (
         <p className="voting-cards__message">
-          As cartas foram reveladas. Aguarde o facilitador iniciar uma nova rodada.
+          The cards have been revealed. Wait for the facilitator to start a new round.
         </p>
       )}
     </div>

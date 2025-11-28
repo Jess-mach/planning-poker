@@ -26,8 +26,8 @@ export const Header = ({ sessionId, onStartGame }: HeaderProps) => {
       setCopySuccess(true);
       setTimeout(() => setCopySuccess(false), 2000);
     }).catch((err) => {
-      console.error('Erro ao copiar link:', err);
-      alert('Não foi possível copiar o link. Por favor, copie manualmente: ' + shareUrl);
+      console.error('Error copying link:', err);
+      alert('Could not copy the link. Please copy it manually: ' + shareUrl);
     });
   };
 
@@ -53,21 +53,21 @@ export const Header = ({ sessionId, onStartGame }: HeaderProps) => {
                 <button 
                   className={`header__share-button ${copySuccess ? 'header__share-button--success' : ''}`}
                   onClick={handleShareRoom}
-                  title="Compartilhar sala"
+                  title="Share room"
                 >
                   {copySuccess ? (
                     <>
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M20 6L9 17L4 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                       </svg>
-                      Copiado!
+                      Copied!
                     </>
                   ) : (
                     <>
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M18 8C19.6569 8 21 6.65685 21 5C21 3.34315 19.6569 2 18 2C16.3431 2 15 3.34315 15 5C15 5.12548 15.0077 5.24917 15.0227 5.37061L8.08259 9.16909C7.54305 8.46815 6.72229 8 5.8 8C4.14315 8 2.8 9.34315 2.8 11C2.8 12.6569 4.14315 14 5.8 14C6.72229 14 7.54305 13.5318 8.08259 12.8309L15.0227 16.6294C15.0077 16.7508 15 16.8745 15 17C15 18.6569 16.3431 20 18 20C19.6569 20 21 18.6569 21 17C21 15.3431 19.6569 14 18 14C17.0777 14 16.257 14.4682 15.7174 15.1691L8.77732 11.3706C8.79234 11.2492 8.8 11.1255 8.8 11C8.8 10.8745 8.79234 10.7508 8.77732 10.6294L15.7174 6.83091C16.257 7.53185 17.0777 8 18 8Z" fill="currentColor"/>
                       </svg>
-                      Compartilhar
+                      Share
                     </>
                   )}
                 </button>

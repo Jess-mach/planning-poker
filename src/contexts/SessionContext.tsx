@@ -32,7 +32,7 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Tentar carregar sessão do sessionStorage ao inicializar
+  // Try to load session from sessionStorage on initialization
   useEffect(() => {
     const loadStoredSession = async () => {
       try {
@@ -43,38 +43,39 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
           const user = JSON.parse(storedUser);
           setCurrentUser(user);
           
-          // Verificar se a sessão ainda existe no Firebase
+          // Check if the session still exists in Firebase
           const sessionExists = await FirebaseService.sessionExists(storedSessionId);
           
           if (sessionExists) {
-            // Inscrever-se para mudanças em tempo real
+            // Subscribe to real-time updates
             const unsubscribe = FirebaseService.subscribeToSession(
               storedSessionId,
               (updatedSession) => {
                 if (updatedSession) {
                   setSession(updatedSession);
                   // Atualizar currentUser com dados mais recentes
+                  // Update currentUser with latest data
                   const updatedUser = updatedSession.users.find(u => u.id === user.id);
                   if (updatedUser) {
                     setCurrentUser(updatedUser);
                     sessionStorage.setItem('currentUser', JSON.stringify(updatedUser));
                   }
                 } else {
-                  // Sessão foi deletada
+                  // Session was deleted
                   clearLocalSession();
                 }
               }
             );
 
-            // Reativar presença do usuário
+            // Reactivate user presence
             await FirebaseService.setUserPresence(storedSessionId, user.id, true);
 
-            // Cleanup ao desmontar
+            // Cleanup on unmount
             return () => {
               unsubscribe();
             };
           } else {
-            // Sessão não existe mais, limpar sessionStorage
+            // Session no longer exists, clear sessionStorage
             clearLocalSession();
           }
         }
@@ -89,7 +90,7 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
     loadStoredSession();
   }, []);
 
-  // Configurar listener em tempo real quando a sessão mudar
+  // Set up realtime listener when the session changes
   useEffect(() => {
     if (!session || !currentUser) {
       setIsLoading(false);
@@ -101,14 +102,14 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
       (updatedSession) => {
         if (updatedSession) {
           setSession(updatedSession);
-          // Atualizar currentUser com dados mais recentes
+          // Update currentUser with latest data
           const updatedUser = updatedSession.users.find(u => u.id === currentUser.id);
           if (updatedUser) {
             setCurrentUser(updatedUser);
             sessionStorage.setItem('currentUser', JSON.stringify(updatedUser));
           }
         } else {
-          // Sessão foi deletada
+          // Session was deleted
           clearLocalSession();
         }
       }
@@ -172,11 +173,11 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
     try {
       let existingSession = null;
       
-      // Se parece com um código de sala (6 caracteres, alternando letra/número)
+      // If it looks like a room code (6 chars, alternating letter/number)
       const isRoomCode = /^[A-Za-z][0-9][A-Za-z][0-9][A-Za-z][0-9]$/.test(sessionIdOrCode);
       
       if (isRoomCode) {
-        // Buscar pelo código da sala
+        // Search by room code
         existingSession = await FirebaseService.getSessionByRoomCode(sessionIdOrCode);
       }
       
@@ -186,7 +187,7 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
       }
       
       if (!existingSession) {
-        throw new Error('Sessão não encontrada');
+        throw new Error('Session not found');
       }
 
       const newUser: User = {

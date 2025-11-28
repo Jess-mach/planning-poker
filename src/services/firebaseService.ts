@@ -11,11 +11,11 @@ import { database } from '../config/firebase';
 import type { Session, User } from '../types/session';
 
 /**
- * Serviço para gerenciar sessões no Firebase Realtime Database
+ * Service to manage sessions in the Firebase Realtime Database
  */
 export class FirebaseService {
   /**
-   * Criar uma nova sessão no Firebase
+   * Create a new session in Firebase
    */
   static async createSession(
     sessionId: string,
@@ -42,14 +42,14 @@ export class FirebaseService {
       updatedAt: serverTimestamp(),
     });
 
-    // Configurar presença do facilitador
+    // Set up facilitator presence
     await this.setUserPresence(sessionId, facilitator.id, true);
 
     return newSession;
   }
 
   /**
-   * Buscar uma sessão existente
+   * Fetch an existing session
    */
   static async getSession(sessionId: string): Promise<Session | null> {
     const sessionRef = ref(database, `sessions/${sessionId}`);
@@ -72,7 +72,7 @@ export class FirebaseService {
   }
 
   /**
-   * Adicionar usuário a uma sessão
+   * Add a user to a session
    */
   static async joinSession(
     sessionId: string,
@@ -81,10 +81,10 @@ export class FirebaseService {
     const session = await this.getSession(sessionId);
     
     if (!session) {
-      throw new Error('Sessão não encontrada');
+      throw new Error('Session not found');
     }
 
-    // Verificar se o usuário já existe na sessão
+    // Check if the user already exists in the session
     const existingUserIndex = session.users.findIndex(u => u.id === user.id);
     
     if (existingUserIndex >= 0) {
@@ -101,12 +101,12 @@ export class FirebaseService {
       updatedAt: serverTimestamp(),
     });
 
-    // Configurar presença do usuário
+    // Set up user presence
     await this.setUserPresence(sessionId, user.id, true);
   }
 
   /**
-   * Remover usuário de uma sessão
+   * Remove a user from a session
    */
   static async leaveSession(sessionId: string, userId: string): Promise<void> {
     const session = await this.getSession(sessionId);
@@ -123,12 +123,12 @@ export class FirebaseService {
       updatedAt: serverTimestamp(),
     });
 
-    // Remover presença
+    // Remove presence
     await this.setUserPresence(sessionId, userId, false);
   }
 
   /**
-   * Registrar voto de um usuário
+   * Register a user's vote
    */
   static async vote(
     sessionId: string,
@@ -138,7 +138,7 @@ export class FirebaseService {
     const session = await this.getSession(sessionId);
     
     if (!session) {
-      throw new Error('Sessão não encontrada');
+      throw new Error('Session not found');
     }
 
     const updatedUsers = session.users.map(user =>
@@ -155,7 +155,7 @@ export class FirebaseService {
   }
 
   /**
-   * Revelar cartas (apenas facilitador)
+   * Reveal cards (facilitator only)
    */
   static async revealCards(sessionId: string): Promise<void> {
     const sessionRef = ref(database, `sessions/${sessionId}`);
@@ -166,13 +166,13 @@ export class FirebaseService {
   }
 
   /**
-   * Resetar rodada (apenas facilitador)
+   * Reset round (facilitator only)
    */
   static async resetRound(sessionId: string): Promise<void> {
     const session = await this.getSession(sessionId);
     
     if (!session) {
-      throw new Error('Sessão não encontrada');
+      throw new Error('Session not found');
     }
 
     const updatedUsers = session.users.map(user => {
@@ -192,7 +192,7 @@ export class FirebaseService {
   }
 
   /**
-   * Escutar mudanças em tempo real de uma sessão
+   * Listen to real-time changes of a session
    */
   static subscribeToSession(
     sessionId: string,
@@ -220,12 +220,12 @@ export class FirebaseService {
       callback(session);
     });
 
-    // Retornar função de unsubscribe
+    // Return unsubscribe function
     return unsubscribe;
   }
 
   /**
-   * Configurar presença online do usuário
+   * Configure user's online presence
    */
   static async setUserPresence(
     sessionId: string,
@@ -235,13 +235,14 @@ export class FirebaseService {
     const presenceRef = ref(database, `sessions/${sessionId}/presence/${userId}`);
     
     if (isOnline) {
-      // Configurar para marcar como offline quando desconectar
+      // Set to mark offline when disconnecting
       await set(presenceRef, {
         online: true,
         lastSeen: serverTimestamp(),
       });
 
       // Configurar o que acontece quando desconectar
+      // Configure behavior on disconnect
       onDisconnect(presenceRef).set({
         online: false,
         lastSeen: serverTimestamp(),
@@ -255,7 +256,7 @@ export class FirebaseService {
   }
 
   /**
-   * Verificar se uma sessão existe
+   * Check if a session exists
    */
   static async sessionExists(sessionId: string): Promise<boolean> {
     const sessionRef = ref(database, `sessions/${sessionId}`);
@@ -264,7 +265,7 @@ export class FirebaseService {
   }
 
   /**
-   * Deletar uma sessão (apenas facilitador)
+   * Delete a session (facilitator only)
    */
   static async deleteSession(sessionId: string): Promise<void> {
     const sessionRef = ref(database, `sessions/${sessionId}`);
@@ -272,7 +273,7 @@ export class FirebaseService {
   }
 
   /**
-   * Gerar ID único para sessão
+   * Generate unique session ID
    */
   static generateSessionId(): string {
     return Math.random().toString(36).substring(2, 15) + 
@@ -280,27 +281,27 @@ export class FirebaseService {
   }
 
   /**
-   * Gerar ID único para usuário
+   * Generate unique user ID
    */
   static generateUserId(): string {
     return Math.random().toString(36).substring(2, 15);
   }
 
   /**
-   * Gerar código de sala de 6 caracteres
-   * Formato: alternância entre letra maiúscula e número (ex: A1B2C3)
+   * Generate a 6-character room code
+   * Format: alternate uppercase letter and number (e.g. A1B2C3)
    */
   static generateRoomCode(): string {
-    const letters = 'ABCDEFGHJKLMNPQRSTUVWXYZ'; // Sem I e O para evitar confusão com 1 e 0
-    const numbers = '23456789'; // Sem 0 e 1 para evitar confusão com O e I
+    const letters = 'ABCDEFGHJKLMNPQRSTUVWXYZ'; // Exclude I and O to avoid confusion with 1 and 0
+    const numbers = '23456789'; // Exclude 0 and 1 to avoid confusion with O and I
     
     let code = '';
     for (let i = 0; i < 6; i++) {
       if (i % 2 === 0) {
-        // Posições pares: letras (0, 2, 4)
+        // Even positions: letters (0, 2, 4)
         code += letters.charAt(Math.floor(Math.random() * letters.length));
       } else {
-        // Posições ímpares: números (1, 3, 5)
+        // Odd positions: numbers (1, 3, 5)
         code += numbers.charAt(Math.floor(Math.random() * numbers.length));
       }
     }
@@ -308,7 +309,7 @@ export class FirebaseService {
   }
 
   /**
-   * Buscar sessão pelo código da sala
+   * Find a session by room code
    */
   static async getSessionByRoomCode(roomCode: string): Promise<Session | null> {
     const sessionsRef = ref(database, 'sessions');
@@ -320,7 +321,7 @@ export class FirebaseService {
 
     const sessions = snapshot.val();
     
-    // Buscar sessão com o código correspondente (case insensitive)
+    // Search for a session with the matching code (case insensitive)
     const normalizedCode = roomCode.toUpperCase();
     
     for (const sessionId of Object.keys(sessions)) {
@@ -342,7 +343,7 @@ export class FirebaseService {
   }
 
   /**
-   * Verificar se um código de sala já existe
+   * Check if a room code already exists
    */
   static async roomCodeExists(roomCode: string): Promise<boolean> {
     const session = await this.getSessionByRoomCode(roomCode);
@@ -350,7 +351,7 @@ export class FirebaseService {
   }
 
   /**
-   * Gerar código de sala único (verifica se já existe)
+   * Generate a unique room code (checks for collisions)
    */
   static async generateUniqueRoomCode(): Promise<string> {
     let code = this.generateRoomCode();

@@ -8,31 +8,31 @@ export const JoinPage = () => {
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const { session, currentUser, leaveSession } = useSession();
-  // Suporta tanto sessionId quanto roomCode na URL
+  // Support both sessionId and roomCode in the URL
   const sessionIdFromUrl = searchParams.get('sessionId') || searchParams.get('code');
   const isCreatingNew = location.state?.createNew;
 
   useEffect(() => {
-    // Se está criando uma nova sessão, não redirecionar
+    // If creating a new session, do not redirect
     if (isCreatingNew) {
       return;
     }
 
-    // Se há uma sessão ativa
+    // If there is an active session
     if (session && currentUser) {
-      // Se há um código/ID na URL e é diferente da sessão atual (verificar tanto id quanto roomCode)
+      // If there is a code/ID in the URL and it's different from current session (check id and roomCode)
       if (sessionIdFromUrl && sessionIdFromUrl !== session.id && sessionIdFromUrl.toUpperCase() !== session.roomCode) {
         leaveSession();
         return;
       }
       
-      // Se há um código/ID na URL e corresponde à sessão atual, redirecionar para o jogo
+      // If there is a code/ID in the URL and it matches the current session, redirect to the game
       if (sessionIdFromUrl && (sessionIdFromUrl === session.id || sessionIdFromUrl.toUpperCase() === session.roomCode)) {
         navigate(`/game/${session.id}`, { replace: true });
         return;
       }
       
-      // Se não há código/ID na URL mas há sessão ativa, redirecionar para o jogo atual
+      // If there's no code/ID in the URL but there's an active session, redirect to current game
       if (!sessionIdFromUrl) {
         navigate(`/game/${session.id}`, { replace: true });
       }

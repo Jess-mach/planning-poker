@@ -8,14 +8,14 @@ export const GamePage = () => {
   const navigate = useNavigate();
   const { session, currentUser } = useSession();
 
-  // Verificar se o ID na URL corresponde à sessão atual (por ID ou roomCode)
+  // Check if the ID in the URL matches the current session (by ID or roomCode)
   const isMatchingSession = session && (
     session.id === id || 
     session.roomCode === id?.toUpperCase()
   );
 
   useEffect(() => {
-    // Se não há sessão ou o ID não corresponde, redirecionar para join
+    // If there's no session or the ID doesn't match, redirect to join
     if (!session || !currentUser) {
       navigate(`/join?code=${id}`, { replace: true });
     } else if (!isMatchingSession) {
@@ -23,7 +23,7 @@ export const GamePage = () => {
     }
   }, [session, currentUser, id, navigate, isMatchingSession]);
 
-  // Se não há sessão, não renderizar nada (vai redirecionar)
+  // If there's no session, render nothing (will redirect)
   if (!session || !currentUser || !isMatchingSession) {
     return null;
   }
