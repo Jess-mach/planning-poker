@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useSession } from '../../contexts/SessionContext';
 import { useToast } from '../../contexts/ToastContext';
+import { useConfirm } from '../../contexts/ConfirmContext';
 import { Container } from '../Container/Container';
 import { Button } from '../Button/Button';
 import { VotingCards } from '../VotingCards/VotingCards';
@@ -11,6 +12,7 @@ export const GameRoom = () => {
   const navigate = useNavigate();
   const { session, currentUser, revealCards, resetRound, leaveSession, vote } = useSession();
   const { showToast } = useToast();
+  const { showConfirm } = useConfirm();
 
   if (!session || !currentUser) {
     return null;
@@ -31,7 +33,7 @@ export const GameRoom = () => {
   };
 
   const handleReset = async () => {
-    if (window.confirm('Are you sure you want to reset the round? All votes will be cleared.')) {
+    if (await showConfirm('Reset Round', 'Are you sure you want to reset the round? All votes will be cleared.')) {
       try {
         await resetRound();
         showToast('Round reset!', 'success');
@@ -43,7 +45,7 @@ export const GameRoom = () => {
   };
 
   const handleLeave = async () => {
-    if (window.confirm('Are you sure you want to leave the session?')) {
+    if (await showConfirm('Leave Session', 'Are you sure you want to leave the session?')) {
       try {
         await leaveSession();
         navigate('/');
