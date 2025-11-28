@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '../../contexts/ToastContext';
 import './Header.css';
 import { Container } from '../Container/Container';
 import { Button } from '../Button/Button';
@@ -11,6 +12,7 @@ interface HeaderProps {
 
 export const Header = ({ sessionId, onStartGame }: HeaderProps) => {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [copySuccess, setCopySuccess] = useState(false);
 
   const handleLogoClick = () => {
@@ -25,9 +27,10 @@ export const Header = ({ sessionId, onStartGame }: HeaderProps) => {
     navigator.clipboard.writeText(shareUrl).then(() => {
       setCopySuccess(true);
       setTimeout(() => setCopySuccess(false), 2000);
+      showToast('Link copied to clipboard!', 'success');
     }).catch((err) => {
       console.error('Error copying link:', err);
-      alert('Could not copy the link. Please copy it manually: ' + shareUrl);
+      showToast('Could not copy the link. Please copy it manually: ' + shareUrl, 'error');
     });
   };
 

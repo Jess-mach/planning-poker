@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useSession } from '../../contexts/SessionContext';
+import { useToast } from '../../contexts/ToastContext';
 import { Container } from '../Container/Container';
 import { Button } from '../Button/Button';
 import { VotingCards } from '../VotingCards/VotingCards';
@@ -9,6 +10,7 @@ import './GameRoom.css';
 export const GameRoom = () => {
   const navigate = useNavigate();
   const { session, currentUser, revealCards, resetRound, leaveSession, vote } = useSession();
+  const { showToast } = useToast();
 
   if (!session || !currentUser) {
     return null;
@@ -21,28 +23,31 @@ export const GameRoom = () => {
   const handleReveal = async () => {
     try {
       await revealCards();
+      showToast('Cards revealed!', 'success');
     } catch (error) {
       console.error('Error revealing cards:', error);
-      alert('Error revealing cards. Please try again.');
+      showToast('Error revealing cards. Please try again.', 'error');
     }
   };
 
   const handleReset = async () => {
-    if (confirm('Are you sure you want to reset the round? All votes will be cleared.')) {
+    if (window.confirm('Are you sure you want to reset the round? All votes will be cleared.')) {
       try {
         await resetRound();
+        showToast('Round reset!', 'success');
       } catch (error) {
         console.error('Error resetting round:', error);
-        alert('Error resetting round. Please try again.');
+        showToast('Error resetting round. Please try again.', 'error');
       }
     }
   };
 
   const handleLeave = async () => {
-    if (confirm('Are you sure you want to leave the session?')) {
+    if (window.confirm('Are you sure you want to leave the session?')) {
       try {
         await leaveSession();
         navigate('/');
+        showToast('You have left the session.', 'info');
       } catch (error) {
         console.error('Error leaving session:', error);
         navigate('/');
@@ -52,7 +57,7 @@ export const GameRoom = () => {
 
   const handleCopyRoomCode = () => {
     navigator.clipboard.writeText(session.roomCode).then(() => {
-      alert('Room code copied!');
+      showToast('Room code copied!', 'success');
     }).catch(() => {
       // Fallback para navegadores que não suportam clipboard API
       prompt('Copy the room code:', session.roomCode);
@@ -108,7 +113,7 @@ export const GameRoom = () => {
                       await vote(currentUser.id, value);
                     } catch (error) {
                       console.error('Erro ao votar:', error);
-                      alert('Erro ao registrar voto. Tente novamente.');
+                      showToast('Erro ao registrar voto. Tente novamente.', 'error');
                     }
                   }
                 }}
