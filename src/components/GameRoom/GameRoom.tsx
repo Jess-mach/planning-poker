@@ -77,7 +77,7 @@ export const GameRoom = () => {
 
   return (
     <div className="game-room">
-      {isCountingDown && <Countdown start={5} onComplete={handleCountdownComplete} />}
+      {isCountingDown && <Countdown start={3} onComplete={handleCountdownComplete} />}
       <Container>
         <div className="game-room__header">
           <div>
@@ -145,7 +145,7 @@ export const GameRoom = () => {
                   Reveal Cards
                 </Button>
               )}
-              {session.isRevealed && isFacilitator && (
+              {session.isRevealed && (
                 <Button variant="secondary" size="large" onClick={handleReset}>
                   New Round
                 </Button>
