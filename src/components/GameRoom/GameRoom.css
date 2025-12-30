@@ -99,7 +99,7 @@
 
 .game-room__layout {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
 }
 
 .game-room__info {
@@ -148,7 +148,7 @@
   text-align: center;
   color: #6c757d;
   font-size: 16px;
-  padding: 16px;
+  padding: 24px;
 }
 
 @media (max-width: 1024px) {
