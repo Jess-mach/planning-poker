@@ -10,15 +10,6 @@ import { Countdown } from '../Countdown/Countdown';
 import './GameRoom.css';
 import { useEffect, useRef, useState } from 'react';
 
-// Custom hook to get the previous value of a prop or state
-function usePrevious<T>(value: T) {
-  const ref = useRef<T>();
-  useEffect(() => {
-    ref.current = value;
-  });
-  return ref.current;
-}
-
 export const GameRoom = () => {
   const navigate = useNavigate();
   const { session, currentUser, revealCards, resetRound, leaveSession, vote } = useSession();
@@ -26,14 +17,16 @@ export const GameRoom = () => {
   const { showConfirm } = useConfirm();
   const [isCountingDown, setIsCountingDown] = useState(false);
 
-  const prevIsRevealed = usePrevious(session?.isRevealed);
+  const prevIsRevealedRef = useRef<boolean | undefined>(undefined);
 
   useEffect(() => {
+    const isRevealed = session?.isRevealed;
     // Show toast only when revealing, not on every re-render
-    if (session?.isRevealed && !prevIsRevealed) {
+    if (isRevealed && !prevIsRevealedRef.current) {
       showToast('Cards revealed!', 'success');
     }
-  }, [session?.isRevealed, prevIsRevealed, showToast]);
+    prevIsRevealedRef.current = isRevealed;
+  }, [session?.isRevealed, showToast]);
 
   if (!session || !currentUser) {
     return null;
