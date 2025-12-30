@@ -71,10 +71,6 @@
   transform: scale(1.2);
 }
 
-.game-room__content {
-  position: relative;
-}
-
 .game-room__table {
   position: relative;
   padding: 50px;

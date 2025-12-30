@@ -108,28 +108,21 @@ export const GameRoom = () => {
                 📋
               </button>
             </div>
-                          <p className="game-room__user-info">
+                          {/* <p className="game-room__user-info">
                 You are: <strong>{currentUser.name}</strong> ({currentUser.role === 'facilitator' ? 'Facilitator' : currentUser.role === 'voter' ? 'Voter' : 'Observer'})
-              </p>
-                              {currentUser.hasVoted && (
-                  <div className="game-room__info">
-                  <p className="game-room__vote-status">
-                    ✓ You voted: <strong>{currentUser.vote}</strong>
-                  </p>
-                  </div>
-                )}
+              </p> */}
+                            
           </div>
           <Button variant="secondary" size="medium" onClick={handleLeave}>
             Leave Session
           </Button>
         </div>
 
-        <div className="game-room__content">
+
+
+          
           <div className="game-room__table">
             <div className="game-room__main">
-              
-
-              
 
               {currentUser.role !== 'observer' && (
                 <VotingCards
@@ -181,7 +174,7 @@ export const GameRoom = () => {
               currentUserId={currentUser.id}
             />
           </div>
-        </div>
+
       </Container>
     </div>
   );
