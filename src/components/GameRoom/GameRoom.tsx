@@ -21,7 +21,6 @@ export const GameRoom = () => {
     return null;
   }
 
-  const isFacilitator = currentUser.id === session.facilitatorId;
   const allVoted = session.users.filter(u => u.role !== 'observer').every(u => u.hasVoted);
   const canReveal = allVoted && !session.isRevealed;
 
