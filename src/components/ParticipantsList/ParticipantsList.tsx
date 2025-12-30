@@ -8,19 +8,6 @@ interface ParticipantsListProps {
 }
 
 export const ParticipantsList = ({ participants, isRevealed, currentUserId }: ParticipantsListProps) => {
-  const getRoleLabel = (role: string) => {
-    switch (role) {
-      case 'facilitator':
-        return 'Facilitator';
-      case 'voter':
-        return 'Voter';
-      case 'observer':
-        return 'Observer';
-      default:
-        return role;
-    }
-  };
-
   const getRoleBadge = (role: string) => {
     switch (role) {
       case 'facilitator':
@@ -34,20 +21,26 @@ export const ParticipantsList = ({ participants, isRevealed, currentUserId }: Pa
     }
   };
 
+  const radius = 400; // Radius of the circle
+  const angle = 360 / participants.length;
+
   return (
     <div className="participants-list">
-      <h3 className="participants-list__title">
-        Participants ({participants.length})
-      </h3>
-      <div className="participants-list__items">
-        {participants.map((participant) => {
-          const isCurrentUser = participant.id === currentUserId;
-          
-          return (
-            <div
-              key={participant.id}
-              className={`participant-item ${isCurrentUser ? 'participant-item--current' : ''}`}
-            >
+      {participants.map((participant, index) => {
+        const isCurrentUser = participant.id === currentUserId;
+        const rotation = angle * index;
+        const x = radius * Math.cos((rotation - 90) * (Math.PI / 180));
+        const y = radius * Math.sin((rotation - 90) * (Math.PI / 180));
+
+        return (
+          <div
+            key={participant.id}
+            className={`participant-item ${isCurrentUser ? 'participant-item--current' : ''}`}
+            style={{
+              transform: `translate(${x}px, ${y}px) rotate(${rotation}deg)`,
+            }}
+          >
+            <div className="participant-item__content" style={{ transform: `rotate(-${rotation}deg)`}}>
               <div className="participant-item__header">
                 <span className="participant-item__badge">
                   {getRoleBadge(participant.role)}
@@ -58,9 +51,6 @@ export const ParticipantsList = ({ participants, isRevealed, currentUserId }: Pa
                 </span>
               </div>
               <div className="participant-item__info">
-                <span className="participant-item__role">
-                  {getRoleLabel(participant.role)}
-                </span>
                 {participant.role !== 'observer' && (
                   <div className="participant-item__status">
                     {participant.hasVoted ? (
@@ -81,9 +71,9 @@ export const ParticipantsList = ({ participants, isRevealed, currentUserId }: Pa
                 )}
               </div>
             </div>
-          );
-        })}
-      </div>
+          </div>
+        );
+      })}
     </div>
   );
 };

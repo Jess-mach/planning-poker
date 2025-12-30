@@ -72,15 +72,28 @@
 }
 
 .game-room__content {
-  display: grid;
-  grid-template-columns: 1fr 300px;
-  gap: 32px;
+  position: relative;
+}
+
+.game-room__table {
+  position: relative;
+  padding: 50px;
+  border-radius: 50%;
+  margin: 40px auto;
+  width: 900px;
+  height: 900px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .game-room__main {
   display: flex;
   flex-direction: column;
   gap: 24px;
+  width: 100%;
+  max-width: 1200px;
+  z-index: 1;
 }
 
 .game-room__info {
@@ -132,19 +145,10 @@
   padding: 16px;
 }
 
-.game-room__sidebar {
-  position: sticky;
-  top: 100px;
-  height: fit-content;
-}
-
 @media (max-width: 1024px) {
-  .game-room__content {
-    grid-template-columns: 1fr;
-  }
-  
-  .game-room__sidebar {
-    position: static;
+  .game-room__table {
+    width: 700px;
+    height: 700px;
   }
 }
 
@@ -157,6 +161,20 @@
   
   .game-room__title {
     font-size: 24px;
+  }
+
+  .game-room__table {
+    width: 100%;
+    height: auto;
+    padding: 0;
+    border-radius: 0;
+    margin: 20px auto;
+    flex-direction: column;
+  }
+
+  .game-room__main {
+    max-width: 100%;
+    order: 2;
   }
 }
 
