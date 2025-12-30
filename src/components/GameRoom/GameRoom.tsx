@@ -8,7 +8,16 @@ import { VotingCards } from '../VotingCards/VotingCards';
 import { ParticipantsList } from '../ParticipantsList/ParticipantsList';
 import { Countdown } from '../Countdown/Countdown';
 import './GameRoom.css';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+
+// Custom hook to get the previous value of a prop or state
+function usePrevious<T>(value: T) {
+  const ref = useRef<T>();
+  useEffect(() => {
+    ref.current = value;
+  });
+  return ref.current;
+}
 
 export const GameRoom = () => {
   const navigate = useNavigate();
@@ -16,6 +25,15 @@ export const GameRoom = () => {
   const { showToast } = useToast();
   const { showConfirm } = useConfirm();
   const [isCountingDown, setIsCountingDown] = useState(false);
+
+  const prevIsRevealed = usePrevious(session?.isRevealed);
+
+  useEffect(() => {
+    // Show toast only when revealing, not on every re-render
+    if (session?.isRevealed && !prevIsRevealed) {
+      showToast('Cards revealed!', 'success');
+    }
+  }, [session?.isRevealed, prevIsRevealed, showToast]);
 
   if (!session || !currentUser) {
     return null;
@@ -25,13 +43,15 @@ export const GameRoom = () => {
   const canReveal = allVoted && !session.isRevealed;
 
   const handleReveal = async () => {
+    // Prevent starting a new countdown if one is already in progress
+    if (isCountingDown) return;
     setIsCountingDown(true);
   };
 
   const handleCountdownComplete = async () => {
     try {
+      // The useEffect above will handle the success toast
       await revealCards();
-      showToast('Cards revealed!', 'success');
     } catch (error) {
       console.error('Error revealing cards:', error);
       showToast('Error revealing cards. Please try again.', 'error');
@@ -169,4 +189,3 @@ export const GameRoom = () => {
     </div>
   );
 };
-
