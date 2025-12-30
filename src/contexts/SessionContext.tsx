@@ -257,7 +257,7 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const resetRound = async () => {
-    if (!session || currentUser?.id !== session.facilitatorId) return;
+    if (!session) return;
 
     try {
       await FirebaseService.resetRound(session.id);
