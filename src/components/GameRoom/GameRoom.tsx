@@ -117,61 +117,64 @@ export const GameRoom = () => {
             Leave Session
           </Button>
         </div>
-         <div > 
+         <div >
                       <ParticipantsList
               participants={session.users}
               isRevealed={session.isRevealed}
               currentUserId={currentUser.id}
             />
-<div className="game-room__table">
-            <div className="game-room__main">
+            <div className="game-room__layout">
+              <div className="game-room__table">
+                          <div className="game-room__main">
 
-              {currentUser.role !== 'observer' && (
-                <VotingCards
-                  deckType={session.deckType}
-                  currentVote={currentUser.vote}
-                  isRevealed={session.isRevealed}
-                  onVote={async (value) => {
-                    if (!session.isRevealed && currentUser) {
-                      try {
-                        await vote(currentUser.id, value);
-                      } catch (error) {
-                        console.error('Erro ao votar:', error);
-                        showToast('Erro ao registrar voto. Tente novamente.', 'error');
-                      }
-                    }
-                  }}
-                />
-              )}
+                            {currentUser.role !== 'observer' && (
+                              <VotingCards
+                                deckType={session.deckType}
+                                currentVote={currentUser.vote}
+                                isRevealed={session.isRevealed}
+                                onVote={async (value) => {
+                                  if (!session.isRevealed && currentUser) {
+                                    try {
+                                      await vote(currentUser.id, value);
+                                    } catch (error) {
+                                      console.error('Erro ao votar:', error);
+                                      showToast('Erro ao registrar voto. Tente novamente.', 'error');
+                                    }
+                                  }
+                                }}
+                              />
+                            )}
 
-              {currentUser.role === 'observer' && (
-                <div className="game-room__observer-message">
-                  <p>You are an observer and cannot vote.</p>
-                  <p>Wait for participants to vote and for the facilitator to reveal the cards.</p>
-                </div>
-              )}
+                            {currentUser.role === 'observer' && (
+                              <div className="game-room__observer-message">
+                                <p>You are an observer and cannot vote.</p>
+                                <p>Wait for participants to vote and for the facilitator to reveal the cards.</p>
+                              </div>
+                            )}
 
+                            
+                          </div>
+
+
+                        </div>
               <div className="game-room__facilitator-actions">
-                {canReveal && (
-                  <Button variant="primary" size="large" onClick={handleReveal}>
-                    Reveal Cards
-                  </Button>
-                )}
-                {session.isRevealed && (
-                  <Button variant="secondary" size="large" onClick={handleReset}>
-                    New Round
-                  </Button>
-                )}
-                {!allVoted && !session.isRevealed && (
-                  <p className="game-room__waiting">
-                    Waiting for everyone to vote... ({session.users.filter(u => u.hasVoted && u.role !== 'observer').length}/{session.users.filter(u => u.role !== 'observer').length})
-                  </p>
-                )}
-              </div>
-            </div>
-
-
-          </div>          
+                          {canReveal && (
+                            <Button variant="primary" size="large" onClick={handleReveal}>
+                              Reveal Cards
+                            </Button>
+                          )}
+                          {session.isRevealed && (
+                            <Button variant="secondary" size="large" onClick={handleReset}>
+                              New Round
+                            </Button>
+                          )}
+                          {!allVoted && !session.isRevealed && (
+                            <p className="game-room__waiting">
+                              Waiting for everyone to vote... ({session.users.filter(u => u.hasVoted && u.role !== 'observer').length}/{session.users.filter(u => u.role !== 'observer').length})
+                            </p>
+                          )}
+                        </div>
+          </div>
           </div>                       
 
           
