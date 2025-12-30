@@ -6,13 +6,16 @@ import { Container } from '../Container/Container';
 import { Button } from '../Button/Button';
 import { VotingCards } from '../VotingCards/VotingCards';
 import { ParticipantsList } from '../ParticipantsList/ParticipantsList';
+import { Countdown } from '../Countdown/Countdown';
 import './GameRoom.css';
+import { useState } from 'react';
 
 export const GameRoom = () => {
   const navigate = useNavigate();
   const { session, currentUser, revealCards, resetRound, leaveSession, vote } = useSession();
   const { showToast } = useToast();
   const { showConfirm } = useConfirm();
+  const [isCountingDown, setIsCountingDown] = useState(false);
 
   if (!session || !currentUser) {
     return null;
@@ -23,12 +26,18 @@ export const GameRoom = () => {
   const canReveal = allVoted && !session.isRevealed;
 
   const handleReveal = async () => {
+    setIsCountingDown(true);
+  };
+
+  const handleCountdownComplete = async () => {
     try {
       await revealCards();
       showToast('Cards revealed!', 'success');
     } catch (error) {
       console.error('Error revealing cards:', error);
       showToast('Error revealing cards. Please try again.', 'error');
+    } finally {
+      setIsCountingDown(false);
     }
   };
 
@@ -68,6 +77,7 @@ export const GameRoom = () => {
 
   return (
     <div className="game-room">
+      {isCountingDown && <Countdown start={5} onComplete={handleCountdownComplete} />}
       <Container>
         <div className="game-room__header">
           <div>
