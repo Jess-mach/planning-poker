@@ -117,11 +117,13 @@ export const GameRoom = () => {
             Leave Session
           </Button>
         </div>
-
-
-
-          
-          <div className="game-room__table">
+         <div > 
+                      <ParticipantsList
+              participants={session.users}
+              isRevealed={session.isRevealed}
+              currentUserId={currentUser.id}
+            />
+<div className="game-room__table">
             <div className="game-room__main">
 
               {currentUser.role !== 'observer' && (
@@ -168,12 +170,12 @@ export const GameRoom = () => {
               </div>
             </div>
 
-            <ParticipantsList
-              participants={session.users}
-              isRevealed={session.isRevealed}
-              currentUserId={currentUser.id}
-            />
-          </div>
+
+          </div>          
+          </div>                       
+
+          
+          
 
       </Container>
     </div>
