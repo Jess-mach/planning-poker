@@ -53,8 +53,9 @@ export const ParticipantsList = ({ participants, isRevealed, currentUserId }: Pa
                   </div>
                 )}
                 {isRevealed && participant.hasVoted && participant.vote !== undefined && (
+                  
                   <div className="participant-item__vote">
-                    Vote: <strong>{participant.vote}</strong>
+                    <strong>{participant.vote}</strong>
                   </div>
                 )}
               </div>

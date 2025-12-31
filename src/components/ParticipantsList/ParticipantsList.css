@@ -96,16 +96,16 @@
 
 .participant-item__vote {
   margin-top: 8px;
-  padding: 8px;
-  background: #f8f9fa;
+  /* padding: 8px; */
+  /* background: #f8f9fa; */
   border-radius: 6px;
   font-size: 14px;
   color: #1A2935;
 }
 
 .participant-item__vote strong {
-  font-size: 18px;
-  color: #007bff;
+  font-size: 24px;
+  color: #28a745;
 }
 
 @media (max-width: 768px) {
