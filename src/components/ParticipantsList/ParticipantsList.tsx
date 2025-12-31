@@ -21,37 +21,25 @@ export const ParticipantsList = ({ participants, isRevealed, currentUserId }: Pa
     }
   };
 
-  const radius = 400; // Radius of the circle
-  const angle = 360 / participants.length;
-
   return (
     <div className="participants-list">
-      {participants.map((participant, index) => {
+      {participants.map((participant) => {
         const isCurrentUser = participant.id === currentUserId;
-        const rotation = angle * index;
-        const x = radius * Math.cos((rotation - 90) * (Math.PI / 180));
-        const y = radius * Math.sin((rotation - 90) * (Math.PI / 180));
 
         return (
           <div
             key={participant.id}
             className={`participant-item ${isCurrentUser ? 'participant-item--current' : ''}`}
-            style={{
-              transform: `translate(${x}px, ${y}px) rotate(${rotation}deg)`,
-            }}
           >
-            <div className="participant-item__content" style={{ transform: `rotate(-${rotation}deg)`}}>
+            <div className="participant-item__content" >
               <div className="participant-item__header">
                 <span className="participant-item__badge">
-                  {getRoleBadge(participant.role)}
-                </span>
-                <span className="participant-item__name">
-                  {participant.name}
+                  {getRoleBadge(participant.role)} {participant.name}
                   {isCurrentUser && ' (You)'}
                 </span>
               </div>
               <div className="participant-item__info">
-                {participant.role !== 'observer' && (
+                {participant.role !== 'observer' && !isRevealed && (
                   <div className="participant-item__status">
                     {participant.hasVoted ? (
                       <span className="participant-item__status--voted">
@@ -71,7 +59,9 @@ export const ParticipantsList = ({ participants, isRevealed, currentUserId }: Pa
                 )}
               </div>
             </div>
+            
           </div>
+          
         );
       })}
     </div>
